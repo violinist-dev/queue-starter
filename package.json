@@ -1,0 +1,31 @@
+{
+  "name": "queue-starter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "dockerode": "^2.5.3",
+    "hiredis": "^0.5.0",
+    "kill-switch": "^2.0.0",
+    "queue": "^4.4.2",
+    "redis": "^2.8.0",
+    "standard": "^10.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "git pull && npm i && npm run kill",
+    "kill": "kill-switch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/violinist-dev/queue-starter.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/violinist-dev/queue-starter/issues"
+  },
+  "homepage": "https://github.com/violinist-dev/queue-starter#readme"
+}
