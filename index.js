@@ -4,28 +4,41 @@ const Docker = require('dockerode')
 const redis = require('redis')
 
 let docker = new Docker()
+let binds = []
+binds.push(__dirname + '/composer-cache:/root/.composer/cache')
 
 let client = redis.createClient();
 client.psubscribe('violinist-queue')
-client.on('pmessage', (channel, pattern, message) => {
-    try {
-        let data = JSON.parse(message)
+
+function createJob(data) {
+    return function(callback) {
         var env = [];
         Object.keys(data).forEach((n) => {
             var val = data[n];
             env.push(`${n}=${val}`)
         })
-        console.log('a')
+        console.log('Starting container')
         docker.run('violinist-worker', ['php', 'runner.php'], process.stdout, {
-            Env: env
+            Env: env,
+            Binds: binds
           }).then(function(container) {
-            console.log(container.output.StatusCode);
+            console.log('Container ended with status code ' + container.output.StatusCode)
             return container.remove();
         }).then(function(data) {
-        console.log('container removed');
+            console.log('container removed');
+            callback()
         }).catch(function(err) {
-        console.log(err);
+            console.log(err);
         });
+    }
+}
+
+client.on('pmessage', (channel, pattern, message) => {
+    try {
+        let data = JSON.parse(message)
+        console.log('Adding something to the queue: ', data.slug)
+        q.push(createJob(data))
+        q.start()
     }
     catch (err) {
         throw err;
@@ -39,7 +52,7 @@ q.on('end', (err) => {
     if (err) {
         throw err
     }
-    logger('Queue end')
+    console.log(('Queue end')
 })
 
 ks.autoStart()
