@@ -52,7 +52,7 @@ q.on('end', (err) => {
     if (err) {
         throw err
     }
-    console.log(('Queue end')
+    console.log('Queue end')
 })
 
 ks.autoStart()
