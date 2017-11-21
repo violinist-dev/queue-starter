@@ -47,7 +47,7 @@ function createJob (data) {
       var val = data[n]
       env.push(`${n}=${val}`)
     })
-    console.log('Starting container')
+    console.log('Starting container for', data.slug)
     docker.run('violinist-worker', ['php', 'runner.php'], [stdout, stderr], {
       Env: env,
       Binds: binds,
