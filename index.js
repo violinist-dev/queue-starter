@@ -32,7 +32,7 @@ function createJob (data) {
     request({url: url, jar: j, method: 'POST', body: postData, json: true}, function (err, data) {
       if (err) {
         log.error(err)
-        throw err;
+        throw err
       }
       log.debug('Posted update about job with status code', data.statusCode)
     })
@@ -82,9 +82,9 @@ function createJob (data) {
             log.error(err, 'Error with posting success state');
             throw err
           }
+          log.info('Status update request code: ' + data.statusCode)
         })
-      }
-      else {
+      } else {
         log.warn('Status code was not 0, it was: ' + code)
       }
       return container.remove()
