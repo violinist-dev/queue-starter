@@ -4,6 +4,8 @@ const Docker = require('dockerode')
 const redis = require('redis')
 const path = require('path')
 const request = require('request')
+const bunyan = require('bunyan')
+let log = bunyan.createLogger({name: "queue-starter"})
 const config = require('./config')
 
 var Writable = require('stream').Writable
@@ -28,7 +30,11 @@ function createJob (data) {
       token: config.token
     }
     request({url: url, jar: j, method: 'POST', body: postData, json: true}, function (err, data) {
-      console.log(err)
+      if (err) {
+        log.error(err)
+        throw err;
+      }
+      log.debug('Posted update about job with status code', data.statusCode)
     })
     var stdout = Writable()
     var stdoutdata = []
@@ -47,14 +53,17 @@ function createJob (data) {
       var val = data[n]
       env.push(`${n}=${val}`)
     })
-    console.log('Starting container for', data.slug)
+    log.info('Starting container for', data.slug)
+    var startTime = Date.now()
     docker.run('violinist-worker', ['php', 'runner.php'], [stdout, stderr], {
       Env: env,
       Binds: binds,
       TTy: false
     }).then(function (container) {
+      let totalTime = Date.now() - startTime;
+      log.info({containerTime: totalTime}, 'Total time was ' + totalTime)
       let code = container.output.StatusCode
-      console.log('Container ended with status code ' + code)
+      log.info('Container ended with status code ' + code)
       if (code === 0) {
         // Notify about the good news.
         postData.set_state = 'success'
@@ -69,15 +78,21 @@ function createJob (data) {
           body: postData,
           json: true
         }, (err, data) => {
-          if (err) throw err
+          if (err) {
+            log.error(err, 'Error with posting success state');
+            throw err
+          }
         })
+      }
+      else {
+        log.warn('Status code was not 0, it was: ' + code)
       }
       return container.remove()
     }).then(function (data) {
-      console.log('container removed')
+      log.info('container removed')
       callback()
     }).catch(function (err) {
-      console.log(err)
+      log.error(err, 'Error with container things')
     })
   }
 }
@@ -85,7 +100,7 @@ function createJob (data) {
 client.on('pmessage', (channel, pattern, message) => {
   try {
     let data = JSON.parse(message)
-    console.log('Adding something to the queue: ', data.slug)
+    log.info('Adding something to the queue: ', data.slug)
     q.push(createJob(data))
     q.start()
   } catch (err) {
@@ -100,7 +115,7 @@ q.on('end', (err) => {
   if (err) {
     throw err
   }
-  console.log('Queue end')
+  log.debug('Queue end')
 })
 
 ks.autoStart()
