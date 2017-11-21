@@ -9,6 +9,7 @@
     "kill-switch": "^2.0.0",
     "queue": "^4.4.2",
     "redis": "^2.8.0",
+    "request": "^2.83.0",
     "standard": "^10.0.3"
   },
   "devDependencies": {},
