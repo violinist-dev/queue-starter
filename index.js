@@ -72,13 +72,14 @@ function createJob (data) {
       runLog.log.info({containerTime: totalTime}, 'Total time was ' + totalTime)
       let code = container.output.StatusCode
       runLog.log.info('Container ended with status code ' + code)
+      let message = {
+        stderr: stderrdata,
+        stdout: stdoutdata
+      }
       if (code === 0) {
         // Notify about the good news.
         postData.set_state = 'success'
-        postData.message = {
-          stderr: stderrdata,
-          stdout: stdoutdata
-        }
+        postData.message = message
         request({
           url: url,
           jar: j,
@@ -94,6 +95,9 @@ function createJob (data) {
         })
       } else {
         runLog.log.warn('Status code was not 0, it was: ' + code)
+        runLog.log.warn('Data from container:', {
+          message: message
+        })
       }
       return container.remove()
     }).then(function (data) {
