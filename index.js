@@ -8,6 +8,11 @@ const bunyan = require('bunyan')
 let log = bunyan.createLogger({name: "queue-starter"})
 const config = require('./config')
 
+function RunLog(data) {
+  this.log = log.child({job_id: data.job_id, slug: data.slug});
+  this.log.info('Creating a run log')
+}
+
 var Writable = require('stream').Writable
 
 let docker = new Docker()
@@ -15,10 +20,13 @@ let binds = []
 binds.push(path.join(__dirname, 'composer-cache:/root/.composer/cache'))
 
 let client = redis.createClient()
-client.psubscribe('violinist-queue')
+client.psubscribe('violinist-queue', () => {
+  log.info('Subscribed to redis')
+})
 
 function createJob (data) {
   return function (callback) {
+    var runLog = new RunLog(data)
     var j = request.jar();
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
     var baseUrl = config.baseUrl
@@ -34,7 +42,7 @@ function createJob (data) {
         log.error(err)
         throw err
       }
-      log.debug('Posted update about job with status code', data.statusCode)
+      runLog.log.debug('Posted update about job with status code', data.statusCode)
     })
     var stdout = Writable()
     var stdoutdata = []
@@ -53,7 +61,7 @@ function createJob (data) {
       var val = data[n]
       env.push(`${n}=${val}`)
     })
-    log.info('Starting container for', data.slug)
+    runLog.log.info('Starting container for', data.slug)
     var startTime = Date.now()
     docker.run('violinist-worker', ['php', 'runner.php'], [stdout, stderr], {
       Env: env,
@@ -61,9 +69,9 @@ function createJob (data) {
       TTy: false
     }).then(function (container) {
       let totalTime = Date.now() - startTime;
-      log.info({containerTime: totalTime}, 'Total time was ' + totalTime)
+      runLog.log.info({containerTime: totalTime}, 'Total time was ' + totalTime)
       let code = container.output.StatusCode
-      log.info('Container ended with status code ' + code)
+      runLog.log.info('Container ended with status code ' + code)
       if (code === 0) {
         // Notify about the good news.
         postData.set_state = 'success'
@@ -79,20 +87,20 @@ function createJob (data) {
           json: true
         }, (err, data) => {
           if (err) {
-            log.error(err, 'Error with posting success state');
+            runLog.log.error(err, 'Error with posting success state');
             throw err
           }
-          log.info('Status update request code: ' + data.statusCode)
+          runLog.log.info('Status update request code: ' + data.statusCode)
         })
       } else {
-        log.warn('Status code was not 0, it was: ' + code)
+        runLog.log.warn('Status code was not 0, it was: ' + code)
       }
       return container.remove()
     }).then(function (data) {
-      log.info('container removed')
+      runLog.log.info('container removed')
       callback()
     }).catch(function (err) {
-      log.error(err, 'Error with container things')
+      runLog.log.error(err, 'Error with container things')
     })
   }
 }
