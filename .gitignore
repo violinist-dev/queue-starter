@@ -58,3 +58,4 @@ typings/
 .env
 .kill-switch.json
 composer-cache
+config.json

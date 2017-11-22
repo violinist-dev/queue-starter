@@ -5,11 +5,11 @@ const redis = require('redis')
 const path = require('path')
 const request = require('request')
 const bunyan = require('bunyan')
-let log = bunyan.createLogger({name: "queue-starter"})
+let log = bunyan.createLogger({name: 'queue-starter'})
 const config = require('./config')
 
-function RunLog(data) {
-  this.log = log.child({job_id: data.job_id, slug: data.slug});
+function RunLog (data) {
+  this.log = log.child({job_id: data.job_id, slug: data.slug})
   this.log.info('Creating a run log')
 }
 
@@ -27,7 +27,7 @@ client.psubscribe('violinist-queue', () => {
 function createJob (data) {
   return function (callback) {
     var runLog = new RunLog(data)
-    var j = request.jar();
+    var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
     var baseUrl = config.baseUrl
     var url = baseUrl + '/cronner/queue'
@@ -68,7 +68,7 @@ function createJob (data) {
       Binds: binds,
       TTy: false
     }).then(function (container) {
-      let totalTime = Date.now() - startTime;
+      let totalTime = Date.now() - startTime
       runLog.log.info({containerTime: totalTime}, 'Total time was ' + totalTime)
       let code = container.output.StatusCode
       runLog.log.info('Container ended with status code ' + code)
@@ -88,7 +88,7 @@ function createJob (data) {
           json: true
         }, (err, data) => {
           if (err) {
-            runLog.log.error(err, 'Error with posting success state');
+            runLog.log.error(err, 'Error with posting success state')
             throw err
           }
           runLog.log.info('Status update request code: ' + data.statusCode)
