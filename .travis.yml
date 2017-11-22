@@ -1,0 +1,13 @@
+language: node_js
+cache:
+  directories:
+    - node_modules
+node_js:
+  - 6
+  - 8
+  - node
+before_script:
+  - npm prune
+after_script:
+  - npm run coverage
+  - cat coverage/karma/*/lcov.info coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js > /dev/null 2>&1
