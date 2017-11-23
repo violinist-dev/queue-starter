@@ -113,7 +113,7 @@ client.on('pmessage', (channel, pattern, message) => {
   try {
     let data = JSON.parse(message)
     log.info('Adding something to the queue: ', data.slug)
-    q.push(createJob(data))
+    q.unshift(createJob(data))
     q.start()
   } catch (err) {
     throw err
