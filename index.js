@@ -110,6 +110,7 @@ function createJob (data) {
       callback()
     }).catch(function (err) {
       runLog.log.error(err, 'Error with container things')
+      callback(err)
     })
   }
 }
