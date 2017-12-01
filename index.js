@@ -1,4 +1,5 @@
 const queue = require('queue')
+const util = require('util')
 const ks = require('kill-switch')
 const Docker = require('dockerode')
 const redis = require('redis')
@@ -9,7 +10,7 @@ let log = bunyan.createLogger({name: 'queue-starter'})
 const config = require('./config')
 
 function RunLog (data) {
-  this.log = log.child({job_id: data.job_id, slug: data.slug})
+  this.log = log.child({job_id: data.job_id, slug: data.slug, php: data.php_version})
   this.log.info('Creating a run log')
 }
 
@@ -26,6 +27,10 @@ client.psubscribe('violinist-queue', () => {
 
 function createJob (data) {
   return function (callback) {
+    if (!data.php_version) {
+      data.php_version = '7.0'
+    }
+    let dockerImage = util.format('violinist/update-check-runner:%s', data.php_version)
     var runLog = new RunLog(data)
     var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
@@ -63,7 +68,7 @@ function createJob (data) {
     })
     runLog.log.info('Starting container for', data.slug)
     var startTime = Date.now()
-    docker.run('violinist-worker', ['php', 'runner.php'], [stdout, stderr], {
+    docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
       Env: env,
       Binds: binds,
       TTy: false
