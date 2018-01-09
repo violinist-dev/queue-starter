@@ -44,7 +44,7 @@ function createJob (data) {
     }
     request({url: url, jar: j, method: 'POST', body: postData, json: true}, function (err, data) {
       if (err) {
-        log.error(err)
+        runLog.log.error(err)
         throw err
       }
       runLog.log.debug('Posted update about job with status code', data.statusCode)
