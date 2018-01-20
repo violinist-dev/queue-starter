@@ -22,9 +22,9 @@ let binds = []
 binds.push(path.join(__dirname, 'composer-cache:/root/.composer/cache'))
 binds.push(path.join(__dirname, 'cosy-cache:/tmp/cosy-cache'))
 const hostConfig = {
-   Memory: 134217728,
-   CpuPeriod: 100000,
-   CpuQuota: 50000
+  Memory: 134217728,
+  CpuPeriod: 100000,
+  CpuQuota: 50000
 }
 let client = redis.createClient()
 client.psubscribe('violinist-queue', () => {
