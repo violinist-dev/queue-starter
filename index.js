@@ -1,4 +1,5 @@
 const queue = require('queue')
+const https = require('https')
 const util = require('util')
 const ks = require('kill-switch')
 const Docker = require('dockerode')
@@ -19,14 +20,21 @@ var Writable = require('stream').Writable
 let docker = new Docker()
 let binds = []
 binds.push(path.join(__dirname, 'composer-cache:/root/.composer/cache'))
-
+binds.push(path.join(__dirname, 'cosy-cache:/tmp/cosy-cache'))
+const hostConfig = {
+   Memory: 134217728,
+   CpuPeriod: 100000,
+   CpuQuota: 50000
+}
 let client = redis.createClient()
 client.psubscribe('violinist-queue', () => {
   log.info('Subscribed to redis')
 })
+log.info('Starting with the follwing host config:', hostConfig)
 
 function createJob (data) {
   return function (callback) {
+    https.get(config.healthCheckUrl)
     if (!data.php_version) {
       data.php_version = '7.0'
     }
@@ -69,6 +77,7 @@ function createJob (data) {
     runLog.log.info('Starting container for', data.slug)
     var startTime = Date.now()
     docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
+      HostConfig: hostConfig,
       Env: env,
       Binds: binds,
       TTy: false
@@ -133,7 +142,7 @@ q.on('end', (err) => {
   if (err) {
     throw err
   }
-  log.debug('Queue end')
+  log.info('Queue end')
 })
 
 ks.autoStart()
