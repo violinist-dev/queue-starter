@@ -128,6 +128,9 @@ client.on('pmessage', (channel, pattern, message) => {
   try {
     let data = JSON.parse(message)
     log.info('Adding something to the queue: ', data.slug)
+    log.info({
+      queueLength: q.length
+    }, 'Queue is now %d items long', q.length)
     q.unshift(createJob(data))
     q.start()
   } catch (err) {
