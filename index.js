@@ -35,6 +35,9 @@ log.info('Starting with the follwing host config:', hostConfig)
 
 function createJob (data) {
   return function (callback) {
+    var headers = {
+      'x-drupal-http-queue-token': config.token
+    }
     https.get(config.healthCheckUrl)
     if (!data.php_version) {
       data.php_version = '7.0'
@@ -113,6 +116,7 @@ function createJob (data) {
         request({
           url: config.baseUrl + '/http-queue/complete/' + data.job_id,
           jar: j,
+          headers: headers,
           method: 'POST',
           body: postData,
           json: true
@@ -155,10 +159,15 @@ let q = queue()
 async function findJob () {
   // Start by trying to get a new job.
   try {
-    let res = await fetch(config.baseUrl + '/http-queue/get-a-job')
+    let optsWithHeaders = {
+      headers: {
+        'x-drupal-http-queue-token': config.token
+      }
+    }
+    let res = await fetch(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
     let body = await res.json()
     log.info('Found a job, trying to claim job id %d', body.job_id)
-    let claimed = await fetch(config.baseUrl + '/http-queue/claim/' + body.job_id)
+    let claimed = await fetch(config.baseUrl + '/http-queue/claim/' + body.job_id, optsWithHeaders)
     if (claimed.status !== 200) {
       throw new Error('Did not achieve a claim on job id ' + body.job_id + '. Status code was ' + claimed.status)
     }
