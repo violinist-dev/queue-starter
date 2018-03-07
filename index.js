@@ -9,6 +9,7 @@ const request = require('request')
 const bunyan = require('bunyan')
 let log = bunyan.createLogger({name: 'queue-starter'})
 const config = require('./config')
+const fetch = require('node-fetch')
 
 function RunLog (data) {
   this.log = log.child({job_id: data.job_id, slug: data.slug, php: data.php_version})
@@ -20,7 +21,7 @@ var Writable = require('stream').Writable
 let docker = new Docker()
 let binds = []
 binds.push(path.join(__dirname, 'composer-cache:/root/.composer/cache'))
-binds.push(path.join(__dirname, 'cosy-cache:/tmp/cosy-cache'))
+binds.push(path.join(__dirname, 'cosy-cache:/root/.cosy-cache'))
 const hostConfig = {
   Memory: 134217728,
   CpuPeriod: 100000,
@@ -34,6 +35,9 @@ log.info('Starting with the follwing host config:', hostConfig)
 
 function createJob (data) {
   return function (callback) {
+    var headers = {
+      'x-drupal-http-queue-token': config.token
+    }
     https.get(config.healthCheckUrl)
     if (!data.php_version) {
       data.php_version = '7.0'
@@ -103,9 +107,26 @@ function createJob (data) {
         }, (err, data) => {
           if (err) {
             runLog.log.error(err, 'Error with posting success state')
+            container.remove()
             throw err
           }
           runLog.log.info('Status update request code: ' + data.statusCode)
+        })
+        runLog.log.info('Posting to new endpoint as well')
+        request({
+          url: config.baseUrl + '/http-queue/complete/' + data.job_id,
+          jar: j,
+          headers: headers,
+          method: 'POST',
+          body: postData,
+          json: true
+        }, (err, data) => {
+          if (err) {
+            runLog.log.error(err, 'Error when completing job in new endpoint')
+            container.remove()
+            throw err
+          }
+          runLog.log.info('Job complete request code: ' + data.statusCode)
         })
       } else {
         runLog.log.warn('Status code was not 0, it was: ' + code)
@@ -126,13 +147,8 @@ function createJob (data) {
 
 client.on('pmessage', (channel, pattern, message) => {
   try {
-    let data = JSON.parse(message)
-    log.info('Adding something to the queue: ', data.slug)
-    log.info({
-      queueLength: q.length
-    }, 'Queue is now %d items long', q.length)
-    q.unshift(createJob(data))
-    q.start()
+    log.info('New data should be available')
+    findJob()
   } catch (err) {
     throw err
   }
@@ -140,12 +156,43 @@ client.on('pmessage', (channel, pattern, message) => {
 
 let q = queue()
 
+async function findJob () {
+  // Start by trying to get a new job.
+  try {
+    let optsWithHeaders = {
+      headers: {
+        'x-drupal-http-queue-token': config.token
+      }
+    }
+    let res = await fetch(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
+    let body = await res.json()
+    log.info('Found a job, trying to claim job id %d', body.job_id)
+    let claimed = await fetch(config.baseUrl + '/http-queue/claim/' + body.job_id, optsWithHeaders)
+    if (claimed.status !== 200) {
+      throw new Error('Did not achieve a claim on job id ' + body.job_id + '. Status code was ' + claimed.status)
+    }
+    let data = JSON.parse(body.payload)
+    data.job_id = body.job_id
+    q.push(createJob(data))
+    log.info({
+      queueLength: q.length
+    }, 'Queue is now %d items long', q.length)
+    q.start()
+  } catch (err) {
+    log.warn(err, 'Caught error when finding job')
+    setTimeout(findJob, 60000)
+  }
+}
+
+findJob()
+
 q.concurrency = 1
 q.on('end', (err) => {
   if (err) {
     throw err
   }
   log.info('Queue end')
+  findJob()
 })
 
 ks.autoStart()
