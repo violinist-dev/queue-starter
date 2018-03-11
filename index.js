@@ -145,16 +145,18 @@ function createJob (data) {
   }
 }
 
+let q = queue()
+
 client.on('pmessage', (channel, pattern, message) => {
   try {
     log.info('New data should be available')
-    findJob()
+    if (q.length > 0) {
+      findJob()
+    }
   } catch (err) {
     throw err
   }
 })
-
-let q = queue()
 
 async function findJob () {
   // Start by trying to get a new job.
