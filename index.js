@@ -25,7 +25,8 @@ binds.push(path.join(__dirname, 'cosy-cache:/root/.cosy-cache'))
 const hostConfig = {
   Memory: 134217728,
   CpuPeriod: 100000,
-  CpuQuota: 50000
+  CpuQuota: 50000,
+  Binds: binds
 }
 let client = redis.createClient()
 client.psubscribe('violinist-queue', () => {
