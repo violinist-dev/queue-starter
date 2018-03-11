@@ -167,6 +167,12 @@ async function findJob () {
       }
     }
     let res = await fetch(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
+    if (res.status !== 200) {
+      let e = new Error('Wrong status code on fetch job')
+      e.fetchStatusCode = res.status
+      log.info('Job fetch ended with status code', res.status)
+      throw e
+    }
     let body = await res.json()
     log.info('Found a job, trying to claim job id %d', body.job_id)
     let claimed = await fetch(config.baseUrl + '/http-queue/claim/' + body.job_id, optsWithHeaders)
@@ -181,7 +187,9 @@ async function findJob () {
     }, 'Queue is now %d items long', q.length)
     q.start()
   } catch (err) {
-    log.warn(err, 'Caught error when finding job')
+    if (!err.fetchStatusCode || err.fetchStatusCode !== 404) {
+      log.warn(err, 'Caught error when finding job')
+    }
     setTimeout(findJob, 60000)
   }
 }
