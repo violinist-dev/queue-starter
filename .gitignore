@@ -60,3 +60,4 @@ typings/
 .kill-switch.json
 composer-cache
 config.json
+cosy-cache
