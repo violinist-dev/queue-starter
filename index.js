@@ -37,9 +37,6 @@ log.info('Starting with the follwing host config:', hostConfig)
 
 function createJob (data) {
   return function (callback) {
-    var headers = {
-      'x-drupal-http-queue-token': config.token
-    }
     https.get(config.healthCheckUrl)
     if (!data.php_version) {
       data.php_version = '7.0'
