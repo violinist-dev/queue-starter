@@ -6,6 +6,7 @@ const Docker = require('dockerode')
 const redis = require('redis')
 const path = require('path')
 const request = require('request')
+const publisher = require('./publisher')
 const bunyan = require('bunyan')
 let log = bunyan.createLogger({name: 'queue-starter'})
 const config = require('./config')
@@ -45,6 +46,7 @@ function createJob (data) {
     }
     let dockerImage = util.format('violinist/update-check-runner:%s', data.php_version)
     var runLog = new RunLog(data)
+    var publishResult = publisher(config, runLog)
     var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
     var baseUrl = config.baseUrl
@@ -114,14 +116,7 @@ function createJob (data) {
           runLog.log.info('Status update request code: ' + data.statusCode)
         })
         runLog.log.info('Posting to new endpoint as well')
-        request({
-          url: config.baseUrl + '/http-queue/complete/' + data.job_id,
-          jar: j,
-          headers: headers,
-          method: 'POST',
-          body: postData,
-          json: true
-        }, (err, data) => {
+        publishResult(postData, (err, data) => {
           if (err) {
             runLog.log.error(err, 'Error when completing job in new endpoint')
             container.remove()
@@ -133,6 +128,16 @@ function createJob (data) {
         runLog.log.warn('Status code was not 0, it was: ' + code)
         runLog.log.warn('Data from container:', {
           message: message
+        })
+        postData.message = message
+        runLog.log.info('Posting error data to endpoint')
+        publishResult(postData, (err, data) => {
+          if (err) {
+            runLog.log.error(err, 'Error when completing job in new endpoint')
+            container.remove()
+            throw err
+          }
+          runLog.log.info('Job complete request code: ' + data.statusCode)
         })
       }
       return container.remove()
