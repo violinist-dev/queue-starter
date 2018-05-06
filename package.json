@@ -6,6 +6,7 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "dockerode": "^2.5.3",
+    "git-rev": "^0.2.1",
     "hiredis": "^0.5.0",
     "kill-switch": "^2.0.0",
     "node-fetch": "^2.1.1",

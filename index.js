@@ -11,6 +11,11 @@ const bunyan = require('bunyan')
 let log = bunyan.createLogger({name: 'queue-starter'})
 const config = require('./config')
 const fetch = require('node-fetch')
+const git = require('git-rev')
+var gitRev
+git.short(function(str) {
+  gitRev = str
+})
 
 function RunLog (data) {
   this.log = log.child({job_id: data.job_id, slug: data.slug, php: data.php_version})
@@ -38,6 +43,8 @@ log.info('Starting with the follwing host config:', hostConfig)
 function createJob (data) {
   return function (callback) {
     https.get(config.healthCheckUrl)
+    data.violinist_revision = gitRev
+    data.violinist_hostname = config.hostname
     if (!data.php_version) {
       data.php_version = '7.0'
     }
