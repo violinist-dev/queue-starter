@@ -13,7 +13,7 @@ const config = require('./config')
 const fetch = require('node-fetch')
 const git = require('git-rev')
 var gitRev
-git.short(function(str) {
+git.short(function (str) {
   gitRev = str
 })
 
