@@ -87,6 +87,7 @@ function createJob (data) {
     })
     runLog.log.info('Starting container for', data.slug)
     var startTime = Date.now()
+    hostConfig.autoRemove = true
     docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
       HostConfig: hostConfig,
       Env: env,
@@ -144,7 +145,6 @@ function createJob (data) {
           runLog.log.info('Job complete request code: ' + data.statusCode)
         })
       }
-      return container.remove()
     }).then(function (data) {
       runLog.log.info('container removed')
       callback()
