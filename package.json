@@ -10,7 +10,7 @@
     "hiredis": "^0.5.0",
     "kill-switch": "^2.0.0",
     "node-fetch": "^2.1.1",
-    "queue": "^4.4.2",
+    "queue": "^5.0.0",
     "redis": "^2.8.0",
     "request": "^2.83.0"
   },
