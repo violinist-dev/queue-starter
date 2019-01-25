@@ -54,20 +54,12 @@ function createJob (data) {
     var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
     var baseUrl = config.baseUrl
-    var url = baseUrl + '/cronner/queue'
     j.setCookie(cookie, baseUrl)
     var postData = {
       job_id: data.job_id,
       set_state: 'processing',
       token: config.token
     }
-    request({url: url, jar: j, method: 'POST', body: postData, json: true}, function (err, data) {
-      if (err) {
-        runLog.log.error(err)
-        throw err
-      }
-      runLog.log.debug('Posted update about job with status code', data.statusCode)
-    })
     var stdout = Writable()
     var stdoutdata = []
     stdout._write = function (chunk, enc, next) {
@@ -106,21 +98,7 @@ function createJob (data) {
         // Notify about the good news.
         postData.set_state = 'success'
         postData.message = message
-        request({
-          url: url,
-          jar: j,
-          method: 'POST',
-          body: postData,
-          json: true
-        }, (err, data) => {
-          if (err) {
-            runLog.log.error(err, 'Error with posting success state')
-            container.remove()
-            throw err
-          }
-          runLog.log.info('Status update request code: ' + data.statusCode)
-        })
-        runLog.log.info('Posting to new endpoint as well')
+        runLog.log.info('Posting job data')
         publishResult(postData, (err, data) => {
           if (err) {
             runLog.log.error(err, 'Error when completing job in new endpoint')
