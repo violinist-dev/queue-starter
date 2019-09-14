@@ -120,8 +120,8 @@ function createCloudJob (config, job: Job, gitRev) {
       }
       const publisher = new Publisher(config)
       publisher.publish(updateData, callback)
-    } catch (runError) {
-      runLog.log.error({ error: runError }, 'There was an error running a cloud task')
+    } catch (err) {
+      runLog.log.error(err, 'There was an error running a cloud task')
       // We do not care if things go ok, since things are queued so many times anyway.
       callback()
     }

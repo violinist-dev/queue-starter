@@ -44,7 +44,7 @@ var RunLog_1 = require("./RunLog");
 function createCloudJob(config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var logData, runLog, awsconfig, data, env, ecsClient, watchClient, name_1, taskDefinition, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, runError_1;
+            var logData, runLog, awsconfig, data, env, ecsClient, watchClient, name_1, taskDefinition, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -175,8 +175,8 @@ function createCloudJob(config, job, gitRev) {
                         publisher.publish(updateData, callback);
                         return [3 /*break*/, 11];
                     case 10:
-                        runError_1 = _a.sent();
-                        runLog.log.error({ error: runError_1 }, 'There was an error running a cloud task');
+                        err_1 = _a.sent();
+                        runLog.log.error(err_1, 'There was an error running a cloud task');
                         // We do not care if things go ok, since things are queued so many times anyway.
                         callback();
                         return [3 /*break*/, 11];
