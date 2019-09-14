@@ -36,7 +36,7 @@ async function findJob (log, config) : Promise<Job> {
       resolve(job)
     })
   } catch (err) {
-    if (err !instanceof FetchError) {
+    if (!(err instanceof FetchError)) {
       log.error(err, 'Caught an error trying to find and claim a job')
     }
     return new Promise<Job>(resolve => {

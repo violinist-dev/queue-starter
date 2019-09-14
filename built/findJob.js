@@ -82,7 +82,7 @@ function findJob(log, config) {
                         })];
                 case 4:
                     err_1 = _a.sent();
-                    if (err_1 instanceof fetchError_1.default) {
+                    if (!(err_1 instanceof fetchError_1.default)) {
                         log.error(err_1, 'Caught an error trying to find and claim a job');
                     }
                     return [2 /*return*/, new Promise(function (resolve) {
