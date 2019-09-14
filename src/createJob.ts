@@ -2,7 +2,6 @@
 /* eslint @typescript-eslint/no-unused-vars: "error" */
 import * as https from 'https'
 import * as util from 'util'
-import * as path from 'path'
 import * as Docker from 'dockerode'
 import Runlog from './RunLog'
 import Publisher from './publisher'
