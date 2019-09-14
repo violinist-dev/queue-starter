@@ -3,8 +3,8 @@ cache:
   directories:
   - node_modules
 node_js:
-- 6
 - 8
+- 10
 - node
 before_install:
   - npm install -g greenkeeper-lockfile@1
