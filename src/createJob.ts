@@ -12,9 +12,8 @@ const docker = new Docker()
 const request = require('request')
 
 const binds = []
-binds.push(path.join(__dirname, '../composer-cache:/root/.composer/cache'))
-binds.push(path.join(__dirname, '../cosy-cache:/root/.cosy-cache'))
 const hostConfig = {
+  Memory: 1073741824,
   Binds: binds,
   autoRemove: true
 }

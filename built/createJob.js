@@ -40,7 +40,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint @typescript-eslint/no-unused-vars: "error" */
 var https = require("https");
 var util = require("util");
-var path = require("path");
 var Docker = require("dockerode");
 var RunLog_1 = require("./RunLog");
 var publisher_1 = require("./publisher");
@@ -48,9 +47,8 @@ var stream_1 = require("stream");
 var docker = new Docker();
 var request = require('request');
 var binds = [];
-binds.push(path.join(__dirname, '../composer-cache:/root/.composer/cache'));
-binds.push(path.join(__dirname, '../cosy-cache:/root/.cosy-cache'));
 var hostConfig = {
+    Memory: 1073741824,
     Binds: binds,
     autoRemove: true
 };
