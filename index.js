@@ -30,7 +30,7 @@ async function start () {
     }
     return
   }
-  if (job.data.queueLength > 0 && config.canStartCloud) {
+  if (job.data.queueLength > config.maxQueueLength && config.canStartCloud) {
     log.info('Starting cloud job')
     const run = createCloudJob(config, job, gitRev)
     cloudQueue.push(run)
