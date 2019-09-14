@@ -4,30 +4,38 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "await-sleep": "0.0.1",
+    "aws-sdk": "^2.528.0",
     "bunyan": "^1.8.12",
     "dockerode": "^2.5.3",
     "git-rev": "^0.2.1",
-    "hiredis": "^0.5.0",
     "kill-switch": "^2.0.0",
     "node-fetch": "^2.1.1",
     "queue": "^4.4.2",
-    "redis": "^2.8.0",
     "request": "^2.83.0"
   },
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "@types/node": "^12.7.5",
+    "@types/node-fetch": "^2.5.0",
+    "@types/request": "^2.48.3",
+    "@typescript-eslint/eslint-plugin": "^2.2.0",
+    "@typescript-eslint/parser": "^2.2.0",
     "coveralls": "^3.0.0",
     "istanbul": "^0.4.5",
     "mocha": "^6.0.0",
     "should": "^13.1.3",
-    "standard": "^11.0.0"
+    "standardx": "^5.0.0",
+    "typescript": "^3.6.3"
   },
   "scripts": {
     "start": "node index.js",
     "deploy": "git pull && npm i && npm run kill",
     "kill": "kill-switch",
     "test": "npm run lint && mocha",
-    "lint": "standard",
-    "coverage": "istanbul cover _mocha"
+    "lint": "standardx **/*.ts && standard *.js",
+    "coverage": "istanbul cover _mocha",
+    "watch-ts": "tsc -w"
   },
   "repository": {
     "type": "git",
@@ -39,5 +47,15 @@
   "bugs": {
     "url": "https://github.com/violinist-dev/queue-starter/issues"
   },
-  "homepage": "https://github.com/violinist-dev/queue-starter#readme"
+  "homepage": "https://github.com/violinist-dev/queue-starter#readme",
+  "standardx": {
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint/eslint-plugin"
+    ],
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error"
+    }
+  }
 }
