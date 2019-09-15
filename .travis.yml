@@ -13,7 +13,7 @@ before_script:
 - greenkeeper-lockfile-update
 after_script:
 - npm run coverage
-- cat coverage/karma/*/lcov.info coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+- cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
   > /dev/null 2>&1
 - greenkeeper-lockfile-upload
 env:

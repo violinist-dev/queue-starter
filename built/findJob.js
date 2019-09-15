@@ -73,6 +73,9 @@ function findJob(log, config) {
                     data = JSON.parse(body.payload);
                     data.job_id = body.job_id;
                     data.queueLength = res.headers.get('x-violinist-queue-length');
+                    if (data.queueLength) {
+                        data.queueLength = parseInt(data.queueLength, 10);
+                    }
                     log.info({
                         queueLength: data.queueLength
                     }, 'Queue is now %d items long', data.queueLength);

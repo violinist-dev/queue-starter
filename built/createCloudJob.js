@@ -50,7 +50,7 @@ function createCloudJob(config, job, gitRev) {
                     case 0:
                         logData = job.data;
                         logData.cloud = true;
-                        runLog = new RunLog_1.default(logData);
+                        runLog = new RunLog_1.Runlog(logData);
                         runLog.log.info('Trying to start cloud job for ' + logData.slug);
                         _a.label = 1;
                     case 1:
@@ -63,6 +63,7 @@ function createCloudJob(config, job, gitRev) {
                         };
                         data = job.data;
                         data.violinist_revision = gitRev;
+                        // This log data property is not something we want as ENV. Also, it fails, since it is a boolean.
                         delete data.cloud;
                         env = Object.keys(data).map(function (key) {
                             return {
@@ -186,5 +187,5 @@ function createCloudJob(config, job, gitRev) {
         });
     };
 }
-module.exports = createCloudJob;
+exports.createCloudJob = createCloudJob;
 //# sourceMappingURL=createCloudJob.js.map

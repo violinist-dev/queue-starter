@@ -3,7 +3,7 @@
 import * as https from 'https'
 import * as util from 'util'
 import * as Docker from 'dockerode'
-import Runlog from './RunLog'
+import { Runlog } from './RunLog'
 import Publisher from './publisher'
 import { Writable } from 'stream'
 import { Job } from './job'
