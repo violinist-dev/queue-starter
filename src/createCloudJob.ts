@@ -24,6 +24,8 @@ export function createCloudJob (config, job: Job, gitRev) {
       data.violinist_revision = gitRev
       // This log data property is not something we want as ENV. Also, it fails, since it is a boolean.
       delete data.cloud
+      // And this also fails since it is a number.
+      delete data.queueLength
       const env = Object.keys(data).map(key => {
         return {
           name: key,
