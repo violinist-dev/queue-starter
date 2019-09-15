@@ -5,7 +5,7 @@ const log = bunyan.createLogger({ name: 'queue-starter' })
 const config = require('./config')
 const git = require('git-rev')
 const createJob = require('./built/createJob')
-const createCloudJob = require('./built/createCloudJob')
+const createCloudJob = require('./built/createCloudJob').createCloudJob
 var gitRev
 git.short(function (str) {
   gitRev = str
