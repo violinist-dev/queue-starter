@@ -5,10 +5,10 @@ import * as AWS from 'aws-sdk'
 import * as util from 'util'
 import * as sleep from 'await-sleep'
 import Publisher from './publisher'
-import Runlog from './RunLog'
+import { Runlog } from './RunLog'
 
-function createCloudJob (config, job: Job, gitRev) {
-  return async function runJob (callback: Function) {
+export function createCloudJob (config, job: Job, gitRev) {
+  return async function runJob (callback) {
     const logData = job.data
     logData.cloud = true
     var runLog = new Runlog(logData)
@@ -22,6 +22,7 @@ function createCloudJob (config, job: Job, gitRev) {
       }
       const data = job.data
       data.violinist_revision = gitRev
+      // This log data property is not something we want as ENV. Also, it fails, since it is a boolean.
       delete data.cloud
       const env = Object.keys(data).map(key => {
         return {
@@ -127,5 +128,3 @@ function createCloudJob (config, job: Job, gitRev) {
     }
   }
 }
-
-module.exports = createCloudJob
