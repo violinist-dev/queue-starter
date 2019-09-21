@@ -8,6 +8,7 @@
     "aws-sdk": "^2.528.0",
     "bunyan": "^1.8.12",
     "dockerode": "^2.5.3",
+    "event-loop-stats": "^1.2.0",
     "git-rev": "^0.2.1",
     "kill-switch": "^2.0.0",
     "node-fetch": "^2.1.1",
