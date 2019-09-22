@@ -23,10 +23,15 @@ cloudQueue.on('end', (err) => {
 const findJob = require('./built/findJob')
 
 async function start () {
+  log.info('Looking for job')
   const job = await findJob(log, config)
   if (!job || !job.data || !job.data.job_id) {
     if (!q.length) {
+      log.info('Waiting for 60 seconds to look for a another job')
       setTimeout(start, 60000)
+    }
+    else {
+      log.info('It seems we already have a something in the queue, trusting job search to be coming up')
     }
     return
   }
