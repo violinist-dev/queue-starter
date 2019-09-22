@@ -17,6 +17,7 @@ export default class Publisher {
     request({
       url: this.config.baseUrl + '/http-queue/complete/' + data.jobId,
       jar: j,
+      timeout: 15000,
       headers: headers,
       method: 'POST',
       body: data,
