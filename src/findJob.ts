@@ -9,7 +9,8 @@ async function findJob (log, config) : Promise<Job> {
     const optsWithHeaders = {
       headers: {
         'x-drupal-http-queue-token': config.token
-      }
+      },
+      timeout: 15000
     }
     const res = await fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
     if (res.status !== 200) {

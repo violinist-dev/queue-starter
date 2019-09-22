@@ -49,7 +49,8 @@ function findJob(log, config) {
                     optsWithHeaders = {
                         headers: {
                             'x-drupal-http-queue-token': config.token
-                        }
+                        },
+                        timeout: 15000
                     };
                     return [4 /*yield*/, fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)];
                 case 1:
