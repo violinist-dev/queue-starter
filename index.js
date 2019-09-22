@@ -30,8 +30,7 @@ async function start () {
     if (!q.length) {
       log.info('Waiting for 60 seconds to look for a another job')
       setTimeout(start, 60000)
-    }
-    else {
+    } else {
       log.info('It seems we already have a something in the queue, trusting job search to be coming up')
     }
     return
