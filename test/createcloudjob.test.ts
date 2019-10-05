@@ -4,6 +4,12 @@ const proxyquire = require('proxyquire').noCallThru();
 import * as fakeRunlog from "./src/fakeRunLog";
 
 describe('createCloudJob', () => {
+
+    beforeEach(done => {
+        fakeRunlog.Runlog.clearCalls()
+        done()
+    })
+
     it('Should export like expected and fail like expected', (done) => {
         let { createCloudJob } = proxyquire('../src/createCloudJob', {
             'aws-sdk': () => {},
