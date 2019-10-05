@@ -19,7 +19,6 @@ const hostConfig = {
 
 function createJob (config, job: Job, gitRev) {
   return async function (callback) {
-    https.get(config.healthCheckUrl)
     const data = job.data
     data.violinist_revision = gitRev
     data.violinist_hostname = config.hostname
@@ -28,6 +27,10 @@ function createJob (config, job: Job, gitRev) {
     }
     const dockerImage = util.format('violinist/update-check-runner:%s', data.php_version)
     var runLog = new Runlog(data)
+    const res = https.get(config.healthCheckUrl)
+    res.on('error', err => {
+      runLog.log.error(err)
+    })
     const publisher = new Publisher(config)
     var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
