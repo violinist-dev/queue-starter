@@ -55,11 +55,10 @@ var hostConfig = {
 function createJob(config, job, gitRev) {
     return function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, dockerImage, runLog, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container_1, totalTime, code, message, err_1;
+            var data, dockerImage, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container_1, totalTime, code, message, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        https.get(config.healthCheckUrl);
                         data = job.data;
                         data.violinist_revision = gitRev;
                         data.violinist_hostname = config.hostname;
@@ -68,6 +67,10 @@ function createJob(config, job, gitRev) {
                         }
                         dockerImage = util.format('violinist/update-check-runner:%s', data.php_version);
                         runLog = new RunLog_1.Runlog(data);
+                        res = https.get(config.healthCheckUrl);
+                        res.on('error', function (err) {
+                            runLog.log.error(err);
+                        });
                         publisher = new publisher_1.default(config);
                         j = request.jar();
                         cookie = request.cookie('XDEBUG_SESSION=PHPSTORM');
