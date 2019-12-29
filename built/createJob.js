@@ -44,6 +44,7 @@ var Docker = require("dockerode");
 var RunLog_1 = require("./RunLog");
 var publisher_1 = require("./publisher");
 var stream_1 = require("stream");
+var promisify_1 = require("./promisify");
 var docker = new Docker();
 var request = require('request');
 var binds = [];
@@ -55,7 +56,7 @@ var hostConfig = {
 function createJob(config, job, gitRev) {
     return function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, dockerImage, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container_1, totalTime, code, message, err_1;
+            var data, dockerImage, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -103,7 +104,7 @@ function createJob(config, job, gitRev) {
                         startTime = Date.now();
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 7, , 8]);
                         return [4 /*yield*/, docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
                                 HostConfig: hostConfig,
                                 Env: env,
@@ -111,54 +112,47 @@ function createJob(config, job, gitRev) {
                                 TTy: false
                             })];
                     case 2:
-                        container_1 = _a.sent();
+                        container = _a.sent();
                         totalTime = Date.now() - startTime;
                         runLog.log.info({ containerTime: totalTime }, 'Total time was ' + totalTime);
-                        code = container_1.output.StatusCode;
+                        code = container.output.StatusCode;
                         runLog.log.info('Container ended with status code ' + code);
                         message = {
                             stderr: stderrdata,
                             stdout: stdoutdata
                         };
-                        if (code === 0) {
-                            // Notify about the good news.
-                            postData.set_state = 'success';
-                            postData.message = message;
-                            runLog.log.info('Posting job data');
-                            publisher.publish(postData, function (err, data) {
-                                if (err) {
-                                    runLog.log.error(err, 'Error when completing job in new endpoint');
-                                    container_1.remove();
-                                    throw err;
-                                }
-                                runLog.log.info('Job complete request code: ' + data.statusCode);
-                            });
-                        }
-                        else {
-                            runLog.log.warn('Status code was not 0, it was: ' + code);
-                            runLog.log.warn('Data from container:', {
-                                message: message
-                            });
-                            postData.message = message;
-                            runLog.log.info('Posting error data to endpoint');
-                            publisher.publish(postData, function (err, data) {
-                                if (err) {
-                                    runLog.log.error(err, 'Error when completing job in new endpoint');
-                                    container_1.remove();
-                                    throw err;
-                                }
-                                runLog.log.info('Job complete request code: ' + data.statusCode);
-                            });
-                        }
+                        if (!(code === 0)) return [3 /*break*/, 4];
+                        // Notify about the good news.
+                        postData.set_state = 'success';
+                        postData.message = message;
+                        runLog.log.info('Posting job data');
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(null, postData))];
+                    case 3:
+                        data_1 = _a.sent();
+                        runLog.log.info('Job complete request code: ' + data_1.statusCode);
+                        return [3 /*break*/, 6];
+                    case 4:
+                        runLog.log.warn('Status code was not 0, it was: ' + code);
+                        runLog.log.warn('Data from container:', {
+                            message: message
+                        });
+                        postData.message = message;
+                        runLog.log.info('Posting error data to endpoint');
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(null, postData))];
+                    case 5:
+                        data_2 = _a.sent();
+                        runLog.log.info('Job complete request code: ' + data_2.statusCode);
+                        _a.label = 6;
+                    case 6:
                         runLog.log.info('container removed');
                         callback();
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 8];
+                    case 7:
                         err_1 = _a.sent();
                         runLog.log.error(err_1, 'Error with container things');
                         callback();
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 8: return [2 /*return*/];
                 }
             });
         });

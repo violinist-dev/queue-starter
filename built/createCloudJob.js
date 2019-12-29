@@ -41,10 +41,11 @@ var util = require("util");
 var sleep = require("await-sleep");
 var publisher_1 = require("./publisher");
 var RunLog_1 = require("./RunLog");
+var promisify_1 = require("./promisify");
 function createCloudJob(config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var logData, runLog, awsconfig, data, env, ecsClient, watchClient, name_1, taskDefinition, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, err_1;
+            var logData, runLog, awsconfig, data, env, ecsClient, watchClient, name_1, taskDefinition, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -54,7 +55,7 @@ function createCloudJob(config, job, gitRev) {
                         runLog.log.info('Trying to start cloud job for ' + logData.slug);
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 10, , 11]);
+                        _a.trys.push([1, 11, , 12]);
                         awsconfig = {
                             accessKeyId: config.accessKeyId,
                             secretAccessKey: config.secretAccessKey,
@@ -175,15 +176,19 @@ function createCloudJob(config, job, gitRev) {
                             set_state: 'success'
                         };
                         publisher = new publisher_1.default(config);
-                        publisher.publish(updateData, callback);
-                        return [3 /*break*/, 11];
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, updateData))];
                     case 10:
+                        statusData = _a.sent();
+                        runLog.log.info('Job complete request code: ' + statusData.statusCode);
+                        callback();
+                        return [3 /*break*/, 12];
+                    case 11:
                         err_1 = _a.sent();
                         runLog.log.error(err_1, 'There was an error running a cloud task');
                         // We do not care if things go ok, since things are queued so many times anyway.
                         callback();
-                        return [3 /*break*/, 11];
-                    case 11: return [2 /*return*/];
+                        return [3 /*break*/, 12];
+                    case 12: return [2 /*return*/];
                 }
             });
         });
