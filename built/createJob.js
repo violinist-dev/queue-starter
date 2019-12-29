@@ -126,7 +126,7 @@ function createJob(config, job, gitRev) {
                         postData.set_state = 'success';
                         postData.message = message;
                         runLog.log.info('Posting job data');
-                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(null, postData))];
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, postData))];
                     case 3:
                         data_1 = _a.sent();
                         runLog.log.info('Job complete request code: ' + data_1.statusCode);
@@ -138,7 +138,7 @@ function createJob(config, job, gitRev) {
                         });
                         postData.message = message;
                         runLog.log.info('Posting error data to endpoint');
-                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(null, postData))];
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, postData))];
                     case 5:
                         data_2 = _a.sent();
                         runLog.log.info('Job complete request code: ' + data_2.statusCode);
