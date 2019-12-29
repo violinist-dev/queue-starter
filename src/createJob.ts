@@ -7,6 +7,7 @@ import { Runlog } from './RunLog'
 import Publisher from './publisher'
 import { Writable } from 'stream'
 import { Job } from './job'
+import promisify from './promisify'
 const docker = new Docker()
 const request = require('request')
 
@@ -81,14 +82,8 @@ function createJob (config, job: Job, gitRev) {
         postData.set_state = 'success'
         postData.message = message
         runLog.log.info('Posting job data')
-        publisher.publish(postData, (err, data) => {
-          if (err) {
-            runLog.log.error(err, 'Error when completing job in new endpoint')
-            container.remove()
-            throw err
-          }
-          runLog.log.info('Job complete request code: ' + data.statusCode)
-        })
+        const data = await promisify(publisher.publish.bind(null, postData))
+        runLog.log.info('Job complete request code: ' + data.statusCode)
       } else {
         runLog.log.warn('Status code was not 0, it was: ' + code)
         runLog.log.warn('Data from container:', {
@@ -96,14 +91,8 @@ function createJob (config, job: Job, gitRev) {
         })
         postData.message = message
         runLog.log.info('Posting error data to endpoint')
-        publisher.publish(postData, (err, data) => {
-          if (err) {
-            runLog.log.error(err, 'Error when completing job in new endpoint')
-            container.remove()
-            throw err
-          }
-          runLog.log.info('Job complete request code: ' + data.statusCode)
-        })
+        const data = await promisify(publisher.publish.bind(null, postData))
+        runLog.log.info('Job complete request code: ' + data.statusCode)
       }
       runLog.log.info('container removed')
       callback()

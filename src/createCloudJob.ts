@@ -6,6 +6,7 @@ import * as util from 'util'
 import * as sleep from 'await-sleep'
 import Publisher from './publisher'
 import { Runlog } from './RunLog'
+import promisify from './promisify'
 
 export function createCloudJob (config, job: Job, gitRev) {
   return async function runJob (callback) {
@@ -122,7 +123,9 @@ export function createCloudJob (config, job: Job, gitRev) {
         set_state: 'success'
       }
       const publisher = new Publisher(config)
-      publisher.publish(updateData, callback)
+      const statusData = await promisify(publisher.publish.bind(publisher, updateData))
+      runLog.log.info('Job complete request code: ' + statusData.statusCode)
+      callback()
     } catch (err) {
       runLog.log.error(err, 'There was an error running a cloud task')
       // We do not care if things go ok, since things are queued so many times anyway.
