@@ -2,7 +2,7 @@ const request = require('request')
 
 export default class Publisher {
   config
-  constructor (config: object) {
+  constructor (config: {baseUrl}) {
     this.config = config
   }
 
