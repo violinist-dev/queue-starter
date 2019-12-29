@@ -82,7 +82,7 @@ function createJob (config, job: Job, gitRev) {
         postData.set_state = 'success'
         postData.message = message
         runLog.log.info('Posting job data')
-        const data = await promisify(publisher.publish.bind(null, postData))
+        const data = await promisify(publisher.publish.bind(publisher, postData))
         runLog.log.info('Job complete request code: ' + data.statusCode)
       } else {
         runLog.log.warn('Status code was not 0, it was: ' + code)
@@ -91,7 +91,7 @@ function createJob (config, job: Job, gitRev) {
         })
         postData.message = message
         runLog.log.info('Posting error data to endpoint')
-        const data = await promisify(publisher.publish.bind(null, postData))
+        const data = await promisify(publisher.publish.bind(publisher, postData))
         runLog.log.info('Job complete request code: ' + data.statusCode)
       }
       runLog.log.info('container removed')
