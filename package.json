@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "await-sleep": "0.0.1",
-    "aws-sdk": "^2.528.0",
+    "aws-sdk": "^2.619.0",
     "bunyan": "^1.8.12",
     "dockerode": "^2.5.3",
     "event-loop-stats": "^1.2.0",
