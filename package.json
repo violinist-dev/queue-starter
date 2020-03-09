@@ -16,7 +16,7 @@
     "request": "^2.83.0"
   },
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^0.1.3",
+    "@istanbuljs/nyc-config-typescript": "^1.0.0",
     "@types/aws-sdk": "^2.7.0",
     "@types/mocha": "^7.0.1",
     "@types/node": "^13.1.0",
