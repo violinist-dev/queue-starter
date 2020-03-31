@@ -7,7 +7,7 @@
     "await-sleep": "0.0.1",
     "aws-sdk": "^2.528.0",
     "bunyan": "^1.8.12",
-    "dockerode": "^2.5.3",
+    "dockerode": "^3.2.0",
     "event-loop-stats": "^1.2.0",
     "git-rev": "^0.2.1",
     "kill-switch": "^2.0.0",
