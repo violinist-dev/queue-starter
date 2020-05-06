@@ -96,6 +96,10 @@ function createCloudJob(config, job, gitRev) {
                                 name_1 = 'violinist-73';
                                 taskDefinition = 'violinist-task-73';
                                 break;
+                            case '7.4':
+                                name_1 = 'violinist-74';
+                                taskDefinition = 'violinist-task-74';
+                                break;
                         }
                         startTime = Date.now();
                         return [4 /*yield*/, ecsClient.runTask({

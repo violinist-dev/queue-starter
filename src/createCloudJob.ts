@@ -56,6 +56,10 @@ export function createCloudJob (config, job: Job, gitRev) {
           name = 'violinist-73'
           taskDefinition = 'violinist-task-73'
           break
+        case '7.4':
+          name = 'violinist-74'
+          taskDefinition = 'violinist-task-74'
+          break
       }
       const startTime = Date.now()
       const taskData = await ecsClient.runTask({
