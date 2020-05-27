@@ -1,4 +1,6 @@
 const queue = require('queue')
+const Docker = require('dockerode');
+let docker = new Docker()
 const eventLoopStats = require('event-loop-stats')
 const ks = require('kill-switch')
 const bunyan = require('bunyan')
@@ -6,6 +8,8 @@ const log = bunyan.createLogger({ name: 'queue-starter' })
 const config = require('./config')
 const git = require('git-rev')
 const createJob = require('./built/createJob')
+const promisifyModule = require('./built/promisify')
+const promisify = promisifyModule.default
 const createCloudJob = require('./built/createCloudJob').createCloudJob
 var gitRev
 git.short(function (str) {
@@ -47,6 +51,34 @@ async function start () {
     q.start()
   }
 }
+
+setInterval(async () => {
+  const imgs = [
+    '7.0',
+    '7.1',
+    '7.2',
+    '7.3',
+    '7.4',
+  ]
+  const jobs = imgs.map(async (img) => {
+    log.info('Pulling img for ' + img, {
+      img
+    })
+    let startTime = Date.now()
+    let stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
+    for await (const chunk of stream) {
+      // Just so we are not doing to much at the same time.
+    }
+    let pullTime = Date.now() - startTime
+    log.info('Pull finished for ' + img, {
+      pullTime,
+      img
+    })
+  })
+
+  await Promise.all(jobs)
+
+}, 10000)
 
 start()
 
