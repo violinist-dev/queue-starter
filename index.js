@@ -52,15 +52,8 @@ async function start () {
   }
 }
 
-setInterval(async () => {
-  const imgs = [
-    '7.0',
-    '7.1',
-    '7.2',
-    '7.3',
-    '7.4',
-  ]
-  const jobs = imgs.map(async (img) => {
+function createPullJob(img) {
+  return async function() {
     log.info('Pulling img for ' + img, {
       img
     })
@@ -74,11 +67,26 @@ setInterval(async () => {
       pullTime,
       img
     })
+  }
+}
+
+async function queuePull() {
+  const imgs = [
+    '7.0',
+    '7.1',
+    '7.2',
+    '7.3',
+    '7.4',
+  ]
+  const jobs = imgs.map(async (img) => {
+    q.push(createPullJob(img))
+    q.start()
   })
 
   await Promise.all(jobs)
-
-}, 10000)
+  setTimeout(queueMicrotask, (60 * 1000 * 60))
+}
+queuePull()
 
 start()
 
