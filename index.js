@@ -92,7 +92,7 @@ async function queuePull () {
   })
 
   await Promise.all(jobs)
-  setTimeout(queueMicrotask, (60 * 1000 * 60))
+  setTimeout(queuePull, (60 * 1000 * 60))
 }
 queuePull()
 
