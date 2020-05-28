@@ -1,6 +1,6 @@
 const queue = require('queue')
-const Docker = require('dockerode');
-let docker = new Docker()
+const Docker = require('dockerode')
+const docker = new Docker()
 const eventLoopStats = require('event-loop-stats')
 const ks = require('kill-switch')
 const bunyan = require('bunyan')
@@ -52,17 +52,19 @@ async function start () {
   }
 }
 
-function createPullJob(img) {
-  return async function() {
+function createPullJob (img) {
+  return async function () {
     log.info('Pulling img for ' + img, {
       img
     })
-    let startTime = Date.now()
-    let stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
-    for await (const chunk of stream) {
-      // Just so we are not doing to much at the same time.
+    const startTime = Date.now()
+    const stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
+    for await (const _ of stream) {
+      // Ignore this, but use the variable so standard does not complain.
+      let chunk = _
+      chunk = chunk.toString()
     }
-    let pullTime = Date.now() - startTime
+    const pullTime = Date.now() - startTime
     log.info('Pull finished for ' + img, {
       pullTime,
       img
@@ -70,13 +72,13 @@ function createPullJob(img) {
   }
 }
 
-async function queuePull() {
+async function queuePull () {
   const imgs = [
     '7.0',
     '7.1',
     '7.2',
     '7.3',
-    '7.4',
+    '7.4'
   ]
   const jobs = imgs.map(async (img) => {
     q.push(createPullJob(img))
