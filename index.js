@@ -54,21 +54,27 @@ async function start () {
 
 function createPullJob (img) {
   return async function () {
-    log.info('Pulling img for ' + img, {
-      img
-    })
-    const startTime = Date.now()
-    const stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
-    for await (const _ of stream) {
-      // Ignore this, but use the variable so standard does not complain.
-      let chunk = _
-      chunk = chunk.toString()
+    try {
+      log.info('Pulling img for ' + img, {
+        img
+      })
+      const startTime = Date.now()
+      const stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
+      for await (const _ of stream) {
+        // Ignore this, but use the variable so standard does not complain.
+        let chunk = _
+        chunk = chunk.toString()
+      }
+      const pullTime = Date.now() - startTime
+      log.info('Pull finished for ' + img, {
+        pullTime,
+        img
+      })
+    } catch (err) {
+      log.error('There was an error: ', {
+        err
+      })
     }
-    const pullTime = Date.now() - startTime
-    log.info('Pull finished for ' + img, {
-      pullTime,
-      img
-    })
   }
 }
 
