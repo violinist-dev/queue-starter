@@ -55,9 +55,9 @@ async function start () {
 function createPullJob (img) {
   return async function () {
     try {
-      log.info('Pulling img for ' + img, {
+      log.info({
         img
-      })
+      }, 'Pulling img for ' + img)
       const startTime = Date.now()
       const stream = await promisify(docker.pull.bind(docker, 'violinist/update-check-runner:' + img))
       for await (const _ of stream) {
@@ -66,14 +66,38 @@ function createPullJob (img) {
         chunk = chunk.toString()
       }
       const pullTime = Date.now() - startTime
-      log.info('Pull finished for ' + img, {
+      log.info({
         pullTime,
         img
-      })
+      }, 'Pull finished for ' + img)
     } catch (err) {
-      log.error('There was an error: ', {
-        err
-      })
+      log.error(err, 'There was an error: ')
+    }
+  }
+}
+
+function createPruneJob(img) {
+  return async function() {
+    try {
+      log.info({
+        img
+      }, 'Prune img for ' + img)
+      const startTime = Date.now()
+      const pruneData = await promisify(docker.pruneImages.bind(docker, {
+        label: 'violinist/update-check-runner:' + img,
+        dangling: true
+      }))
+      log.info({
+        pruneData,
+        img
+      }, 'Prune data')
+      const pruneTime = Date.now() - startTime
+      log.info({
+        pruneTime,
+        img
+      }, 'Prune finished for ' + img)
+    } catch (err) {
+      log.error(err, 'There was an error: ')
     }
   }
 }
@@ -88,17 +112,20 @@ async function queuePull () {
   ]
   const jobs = imgs.map(async (img) => {
     q.push(createPullJob(img))
+    q.push(createPruneJob(img))
     q.start()
   })
 
   await Promise.all(jobs)
   setTimeout(queuePull, (60 * 1000 * 60))
 }
-queuePull()
-
-start()
 
 q.concurrency = 1
+
+start()
+queuePull()
+
+
 q.on('end', (err) => {
   if (err) {
     throw err
