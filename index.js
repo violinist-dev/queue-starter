@@ -76,8 +76,8 @@ function createPullJob (img) {
   }
 }
 
-function createPruneJob(img) {
-  return async function() {
+function createPruneJob (img) {
+  return async function () {
     try {
       log.info({
         img
@@ -124,7 +124,6 @@ q.concurrency = 1
 
 start()
 queuePull()
-
 
 q.on('end', (err) => {
   if (err) {
