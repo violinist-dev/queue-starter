@@ -49,7 +49,7 @@ var docker = new Docker();
 var request = require('request');
 var binds = [];
 var hostConfig = {
-    Memory: 1073741824,
+    Memory: 2147483648,
     Binds: binds,
     autoRemove: true
 };

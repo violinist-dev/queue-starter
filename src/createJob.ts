@@ -13,7 +13,7 @@ const request = require('request')
 
 const binds = []
 const hostConfig = {
-  Memory: 1073741824,
+  Memory: 2147483648,
   Binds: binds,
   autoRemove: true
 }
