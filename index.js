@@ -110,9 +110,15 @@ async function queuePull () {
     '7.3',
     '7.4'
   ]
-  const jobs = imgs.map(async (img) => {
-    q.push(createPullJob(img))
-    q.push(createPruneJob(img))
+  const jobs = imgs.map(async (version) => {
+    var imgs = [
+      `${version}-multi-composer-1`,
+      `${version}-multi-composer-2`
+    ]
+    imgs.forEach((img) => {
+      q.push(createPullJob(img))
+      q.push(createPruneJob(img))
+    })
     q.start()
   })
 
