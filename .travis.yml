@@ -10,7 +10,7 @@ node_js:
 before_install:
   - npm install -g greenkeeper-lockfile@1
 before_script:
-- docker pull violinist/update-check-runner:7.0
+- docker pull violinist/update-check-runner:7.0-multi-composer-1
 - npm prune
 - greenkeeper-lockfile-update
 after_script:

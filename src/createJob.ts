@@ -26,8 +26,12 @@ function createJob (config, job: Job, gitRev) {
     if (!data.php_version) {
       data.php_version = '7.0'
     }
-    const dockerImage = util.format('violinist/update-check-runner:%s', data.php_version)
+    if (!data.composer_version) {
+      data.composer_version = '1'
+    }
+    const dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
     var runLog = new Runlog(data)
+    runLog.log.info('Using image', dockerImage)
     const res = https.get(config.healthCheckUrl)
     res.on('error', err => {
       runLog.log.error(err)
