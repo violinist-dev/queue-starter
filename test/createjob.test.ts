@@ -4,7 +4,7 @@ const proxyquire = require('proxyquire').noCallThru();
 import * as fakeRunlog from "./src/fakeRunLog";
 import fakeDockerode from "./src/fakeDockerode"
 import promisify from "../src/promisify"
-const supportedVersions = require("./src/supportedPhpVersions")
+const supportedVersions = require("../src/supportedPhpVersions")
 
 describe('createJob', () => {
 
