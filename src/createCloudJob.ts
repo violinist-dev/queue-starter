@@ -13,6 +13,9 @@ const createEcsName = (data) => {
   // PHP version 7.1 => 71
   // PHP version 8.0 => 80
   // ...and so on.
+  if (!data.php_version) {
+    data.php_version = '7.2'
+  }
   return data.php_version.replace('.', '')
 }
 
@@ -20,6 +23,9 @@ const createEcsTaskDefinition = (data) => {
   // Should be named like this:
   // violinist-71-composer-1
   // Where 71 means version 7.1, and 1 means composer version 1.
+  if (!data.composer_version) {
+    data.composer_version = 1
+  }
   return util.format('violinist-%s-composer-%s', createEcsName(data), data.composer_version)
 }
 
@@ -47,7 +53,9 @@ export function createCloudJob (config, job: Job, gitRev) {
       // And this also fails since it is a number.
       delete data.queueLength
       // This is also a number, but since we need it, let's convert it to a string.
-      data.composer_version = data.composer_version.toString()
+      if (data.composer_version) {
+        data.composer_version = data.composer_version.toString()
+      }
       const env = Object.keys(data).map(key => {
         return {
           name: key,
