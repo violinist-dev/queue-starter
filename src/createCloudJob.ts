@@ -8,10 +8,30 @@ import Publisher from './publisher'
 import { Runlog } from './RunLog'
 import promisify from './promisify'
 
+const createEcsName = (data) => {
+  // Should be named like this:
+  // PHP version 7.1 => 71
+  // PHP version 8.0 => 80
+  // ...and so on.
+  return data.php_version.replace('.', '')
+}
+
+const createEcsTaskDefinition = (data) => {
+  // Should be named like this:
+  // violinist-71-composer-1
+  // Where 71 means version 7.1, and 1 means composer version 1.
+  return util.format('violinist-%s-composer-%s', createEcsName(data), data.composer_version)
+}
+
 export function createCloudJob (config, job: Job, gitRev) {
   return async function runJob (callback) {
     const logData = job.data
+    const data = job.data
+    const name = createEcsName(data)
+    const taskDefinition = createEcsTaskDefinition(data)
     logData.cloud = true
+    logData.name = name
+    logData.taskDefinition = taskDefinition
     var runLog = new Runlog(logData)
     runLog.log.info('Trying to start cloud job for ' + logData.slug)
     try {
@@ -21,12 +41,13 @@ export function createCloudJob (config, job: Job, gitRev) {
         region: config.region,
         apiVersion: config.apiVersion
       }
-      const data = job.data
       data.violinist_revision = gitRev
       // This log data property is not something we want as ENV. Also, it fails, since it is a boolean.
       delete data.cloud
       // And this also fails since it is a number.
       delete data.queueLength
+      // This is also a number, but since we need it, let's convert it to a string.
+      data.composer_version = data.composer_version.toString()
       const env = Object.keys(data).map(key => {
         return {
           name: key,
@@ -41,26 +62,6 @@ export function createCloudJob (config, job: Job, gitRev) {
       })
       const ecsClient = new AWS.ECS(awsconfig)
       const watchClient = new AWS.CloudWatchLogs(awsconfig)
-      let name = 'violinist-70'
-      let taskDefinition = 'violinist-task-70'
-      switch (data.php_version) {
-        case '7.1':
-          name = 'violinist-71'
-          taskDefinition = 'violinist-task-71'
-          break
-        case '7.2':
-          name = 'violinist-72'
-          taskDefinition = 'violinist-task-72'
-          break
-        case '7.3':
-          name = 'violinist-73'
-          taskDefinition = 'violinist-task-73'
-          break
-        case '7.4':
-          name = 'violinist-74'
-          taskDefinition = 'violinist-task-74'
-          break
-      }
       const startTime = Date.now()
       const taskData = await ecsClient.runTask({
         cluster: 'violinist-cluster',
@@ -97,7 +98,7 @@ export function createCloudJob (config, job: Job, gitRev) {
           retries++
           const list = await watchClient.getLogEvents({
             logGroupName: util.format('/ecs/%s', taskDefinition),
-            logStreamName: util.format('ecs/%s/%s', name, arnParts[1])
+            logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           }).promise()
           events = list.events
           if (events.length) {
