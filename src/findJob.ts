@@ -12,7 +12,14 @@ async function findJob (log, config) : Promise<Job> {
       },
       timeout: 15000
     }
+    const awsRequired = config.runCloud
     const res = await fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
+    const awsEnabled = res.headers.get('x-violinist-aws')
+    if (!awsEnabled && awsRequired) {
+      return new Promise<Job>(resolve => {
+        resolve(new Job({}))
+      })
+    }
     if (res.status !== 200) {
       const e = new FetchError('Wrong status code on fetch job')
       e.fetchStatusCode = res.status
