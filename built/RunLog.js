@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var bunyan = require('bunyan');
-var log = bunyan.createLogger({ name: 'queue-starter' });
+var config = require('../config');
+var log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname });
 var Runlog = /** @class */ (function () {
     function Runlog(data) {
         if (!data.taskDefinition) {

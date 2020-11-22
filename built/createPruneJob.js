@@ -40,7 +40,8 @@ var promisify_1 = require("./promisify");
 var Docker = require("dockerode");
 var bunyan = require('bunyan');
 var docker = new Docker();
-var log = bunyan.createLogger({ name: 'queue-starter' });
+var config = require('../config');
+var log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname });
 function createPruneJob(img) {
     return function () {
         return __awaiter(this, void 0, void 0, function () {
