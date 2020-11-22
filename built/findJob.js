@@ -41,7 +41,7 @@ var fetchError_1 = require("./fetchError");
 var fetchLib = require('node-fetch');
 function findJob(log, config) {
     return __awaiter(this, void 0, void 0, function () {
-        var optsWithHeaders, res, e, body, claimed, data, job_2, err_1;
+        var optsWithHeaders, awsRequired, res, awsEnabled, e, body, claimed, data, job_2, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -52,9 +52,16 @@ function findJob(log, config) {
                         },
                         timeout: 15000
                     };
+                    awsRequired = config.runCloud;
                     return [4 /*yield*/, fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)];
                 case 1:
                     res = _a.sent();
+                    awsEnabled = res.headers.get('x-violinist-aws');
+                    if (!awsEnabled && awsRequired) {
+                        return [2 /*return*/, new Promise(function (resolve) {
+                                resolve(new job_1.Job({}));
+                            })];
+                    }
                     if (res.status !== 200) {
                         e = new fetchError_1.default('Wrong status code on fetch job');
                         e.fetchStatusCode = res.status;
