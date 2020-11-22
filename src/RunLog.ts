@@ -1,5 +1,6 @@
 const bunyan = require('bunyan')
-const log = bunyan.createLogger({ name: 'queue-starter' })
+const config = require('../config')
+const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname })
 
 export class Runlog {
     log

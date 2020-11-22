@@ -2,7 +2,8 @@ import promisify from './promisify'
 import * as Docker from 'dockerode'
 const bunyan = require('bunyan')
 const docker = new Docker()
-const log = bunyan.createLogger({ name: 'queue-starter' })
+const config = require('../config')
+const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname })
 
 function createPruneJob (img) {
   return async function () {
