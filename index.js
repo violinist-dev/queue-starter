@@ -24,6 +24,7 @@ cloudQueue.on('end', (err) => {
     throw err
   }
   log.info('Cloud queue end')
+  start()
 })
 const findJob = require('./built/findJob')
 
