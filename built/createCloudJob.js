@@ -42,15 +42,39 @@ var sleep = require("await-sleep");
 var publisher_1 = require("./publisher");
 var RunLog_1 = require("./RunLog");
 var promisify_1 = require("./promisify");
+var createEcsName = function (data) {
+    // Should be named like this:
+    // PHP version 7.1 => 71
+    // PHP version 8.0 => 80
+    // ...and so on.
+    if (!data.php_version) {
+        data.php_version = '7.2';
+    }
+    return data.php_version.replace('.', '');
+};
+var createEcsTaskDefinition = function (data) {
+    // Should be named like this:
+    // violinist-71-composer-1
+    // Where 71 means version 7.1, and 1 means composer version 1.
+    if (!data.composer_version) {
+        data.composer_version = 1;
+    }
+    return util.format('violinist-%s-composer-%s', createEcsName(data), data.composer_version);
+};
 function createCloudJob(config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var logData, runLog, awsconfig, data, env, ecsClient, watchClient, name_1, taskDefinition, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1;
+            var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         logData = job.data;
+                        data = job.data;
+                        name = createEcsName(data);
+                        taskDefinition = createEcsTaskDefinition(data);
                         logData.cloud = true;
+                        logData.name = name;
+                        logData.taskDefinition = taskDefinition;
                         runLog = new RunLog_1.Runlog(logData);
                         runLog.log.info('Trying to start cloud job for ' + logData.slug);
                         _a.label = 1;
@@ -62,12 +86,15 @@ function createCloudJob(config, job, gitRev) {
                             region: config.region,
                             apiVersion: config.apiVersion
                         };
-                        data = job.data;
                         data.violinist_revision = gitRev;
                         // This log data property is not something we want as ENV. Also, it fails, since it is a boolean.
                         delete data.cloud;
                         // And this also fails since it is a number.
                         delete data.queueLength;
+                        // This is also a number, but since we need it, let's convert it to a string.
+                        if (data.composer_version) {
+                            data.composer_version = data.composer_version.toString();
+                        }
                         env = Object.keys(data).map(function (key) {
                             return {
                                 name: key,
@@ -81,26 +108,6 @@ function createCloudJob(config, job, gitRev) {
                         });
                         ecsClient = new AWS.ECS(awsconfig);
                         watchClient = new AWS.CloudWatchLogs(awsconfig);
-                        name_1 = 'violinist-70';
-                        taskDefinition = 'violinist-task-70';
-                        switch (data.php_version) {
-                            case '7.1':
-                                name_1 = 'violinist-71';
-                                taskDefinition = 'violinist-task-71';
-                                break;
-                            case '7.2':
-                                name_1 = 'violinist-72';
-                                taskDefinition = 'violinist-task-72';
-                                break;
-                            case '7.3':
-                                name_1 = 'violinist-73';
-                                taskDefinition = 'violinist-task-73';
-                                break;
-                            case '7.4':
-                                name_1 = 'violinist-74';
-                                taskDefinition = 'violinist-task-74';
-                                break;
-                        }
                         startTime = Date.now();
                         return [4 /*yield*/, ecsClient.runTask({
                                 cluster: 'violinist-cluster',
@@ -118,7 +125,7 @@ function createCloudJob(config, job, gitRev) {
                                     containerOverrides: [
                                         {
                                             environment: env,
-                                            name: name_1
+                                            name: name
                                         }
                                     ]
                                 },
@@ -143,7 +150,7 @@ function createCloudJob(config, job, gitRev) {
                         retries++;
                         return [4 /*yield*/, watchClient.getLogEvents({
                                 logGroupName: util.format('/ecs/%s', taskDefinition),
-                                logStreamName: util.format('ecs/%s/%s', name_1, arnParts[1])
+                                logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
                             }).promise()];
                     case 5:
                         list = _a.sent();

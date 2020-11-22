@@ -10,6 +10,7 @@ const createCloudJob = require('./built/createCloudJob').createCloudJob
 const createPruneJob = require('./built/createPruneJob')
 const createPullJob = require('./built/createPullJob')
 const supportedPhpVersions = require('./built/supportedPhpVersions')
+const sleep = require('await-sleep')
 var gitRev
 git.short(function (str) {
   gitRev = str
@@ -23,6 +24,7 @@ cloudQueue.on('end', (err) => {
     throw err
   }
   log.info('Cloud queue end')
+  start()
 })
 const findJob = require('./built/findJob')
 
@@ -38,11 +40,12 @@ async function start () {
     }
     return
   }
-  if (job.data.queueLength > config.maxQueueLength && config.canStartCloud) {
+  if (config.runCloud) {
     log.info('Starting cloud job')
     const run = createCloudJob(config, job, gitRev)
     cloudQueue.push(run)
     cloudQueue.start()
+    await sleep(3000)
     start()
   } else {
     const run = createJob(config, job, gitRev)
