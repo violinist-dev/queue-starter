@@ -60,7 +60,6 @@ export function createCloudJob (config, job: Job, gitRev) {
         return {
           name: key,
           value: job.data[key]
-
         }
       })
       env.push({
