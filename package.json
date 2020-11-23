@@ -11,7 +11,7 @@
     "event-loop-stats": "^1.2.0",
     "git-rev": "^0.2.1",
     "kill-switch": "^2.0.0",
-    "node-fetch": "^2.1.1",
+    "node-fetch": "^2.6.1",
     "queue": "^4.4.2",
     "request": "^2.83.0"
   },
