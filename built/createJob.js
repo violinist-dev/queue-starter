@@ -48,15 +48,18 @@ var promisify_1 = require("./promisify");
 var docker = new Docker();
 var request = require('request');
 var binds = [];
-var hostConfig = {
-    Memory: 2147483648,
-    Binds: binds,
-    autoRemove: true
+var getHostConfig = function (type) {
+    var hostConfig = {
+        Memory: 2147483648,
+        Binds: binds,
+        autoRemove: true
+    };
+    return hostConfig;
 };
 function createJob(config, job, gitRev) {
     return function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, dockerImage, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
+            var data, dockerImage, type, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -70,6 +73,11 @@ function createJob(config, job, gitRev) {
                             data.composer_version = '1';
                         }
                         dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version);
+                        type = 'update';
+                        if (data.type === 'violinist_needs_update_checker') {
+                            dockerImage = 'needs-update-check-runner';
+                            type = 'needsUpdate';
+                        }
                         runLog = new RunLog_1.Runlog(data);
                         runLog.log.info('Using image', dockerImage);
                         res = https.get(config.healthCheckUrl);
@@ -110,7 +118,7 @@ function createJob(config, job, gitRev) {
                     case 1:
                         _a.trys.push([1, 7, , 8]);
                         return [4 /*yield*/, docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
-                                HostConfig: hostConfig,
+                                HostConfig: getHostConfig(type),
                                 Env: env,
                                 Binds: binds,
                                 TTy: false
@@ -136,6 +144,7 @@ function createJob(config, job, gitRev) {
                         runLog.log.info('Job complete request code: ' + data_1.statusCode);
                         return [3 /*break*/, 6];
                     case 4:
+                        postData.set_state = 'failure';
                         runLog.log.warn('Status code was not 0, it was: ' + code);
                         runLog.log.warn('Data from container:', {
                             message: message
