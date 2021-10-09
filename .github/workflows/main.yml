@@ -26,6 +26,7 @@ jobs:
       - run: npm test
       - name: Coveralls
         if: matrix.node == 14
-        run: |
-          npm run coverage
-          cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js > /dev/null 2>&1
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+    
