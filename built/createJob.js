@@ -54,6 +54,10 @@ var getHostConfig = function (type) {
         Binds: binds,
         autoRemove: true
     };
+    if (type === 'update') {
+        // For now just making sure the coding standard is correct.
+        hostConfig.Binds = [];
+    }
     return hostConfig;
 };
 function createJob(config, job, gitRev) {

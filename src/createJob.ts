@@ -12,11 +12,15 @@ const docker = new Docker()
 const request = require('request')
 
 const binds = []
-const getHostConfig = function(type) {
-  let hostConfig = {
+const getHostConfig = function (type: string) {
+  const hostConfig = {
     Memory: 2147483648,
     Binds: binds,
     autoRemove: true
+  }
+  if (type === 'update') {
+    // For now just making sure the coding standard is correct.
+    hostConfig.Binds = []
   }
   return hostConfig
 }
