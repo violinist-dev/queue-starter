@@ -136,6 +136,7 @@ function createJob(config, job, gitRev) {
                         runLog.log.info('Job complete request code: ' + data_1.statusCode);
                         return [3 /*break*/, 6];
                     case 4:
+                        postData.set_state = 'failure';
                         runLog.log.warn('Status code was not 0, it was: ' + code);
                         runLog.log.warn('Data from container:', {
                             message: message
