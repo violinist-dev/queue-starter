@@ -38,10 +38,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var job_1 = require("./job");
 var fetchError_1 = require("./fetchError");
+var https = require("https");
 var fetchLib = require('node-fetch');
 function findJob(log, config) {
     return __awaiter(this, void 0, void 0, function () {
-        var optsWithHeaders, awsRequired, res, awsEnabled, e, body, claimed, data, job_2, err_1;
+        var optsWithHeaders, awsRequired, res, healthRes, awsEnabled, e, body, claimed, data, job_2, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -56,6 +57,10 @@ function findJob(log, config) {
                     return [4 /*yield*/, fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)];
                 case 1:
                     res = _a.sent();
+                    healthRes = https.get(config.healthCheckUrl);
+                    healthRes.on('error', function (err) {
+                        log.error(err);
+                    });
                     awsEnabled = res.headers.get('x-violinist-aws');
                     if (!awsEnabled && awsRequired) {
                         return [2 /*return*/, new Promise(function (resolve) {

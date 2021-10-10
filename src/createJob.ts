@@ -1,6 +1,5 @@
 /* eslint no-unused-vars: "off" */
 /* eslint @typescript-eslint/no-unused-vars: "error" */
-import * as https from 'https'
 import * as util from 'util'
 import * as Docker from 'dockerode'
 import { Runlog } from './RunLog'
@@ -44,10 +43,6 @@ function createJob (config, job: Job, gitRev) {
     }
     var runLog = new Runlog(data)
     runLog.log.info('Using image', dockerImage)
-    const res = https.get(config.healthCheckUrl)
-    res.on('error', err => {
-      runLog.log.error(err)
-    })
     const publisher = new Publisher(config)
     var j = request.jar()
     var cookie = request.cookie('XDEBUG_SESSION=PHPSTORM')
