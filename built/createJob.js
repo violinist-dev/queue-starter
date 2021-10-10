@@ -38,7 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint no-unused-vars: "off" */
 /* eslint @typescript-eslint/no-unused-vars: "error" */
-var https = require("https");
 var util = require("util");
 var Docker = require("dockerode");
 var RunLog_1 = require("./RunLog");
@@ -63,7 +62,7 @@ var getHostConfig = function (type) {
 function createJob(config, job, gitRev) {
     return function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, dockerImage, type, runLog, res, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
+            var data, dockerImage, type, runLog, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -84,10 +83,6 @@ function createJob(config, job, gitRev) {
                         }
                         runLog = new RunLog_1.Runlog(data);
                         runLog.log.info('Using image', dockerImage);
-                        res = https.get(config.healthCheckUrl);
-                        res.on('error', function (err) {
-                            runLog.log.error(err);
-                        });
                         publisher = new publisher_1.default(config);
                         j = request.jar();
                         cookie = request.cookie('XDEBUG_SESSION=PHPSTORM');
