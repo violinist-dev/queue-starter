@@ -89,6 +89,7 @@ function createJob (config, job: Job, gitRev) {
         const data = await promisify(publisher.publish.bind(publisher, postData))
         runLog.log.info('Job complete request code: ' + data.statusCode)
       } else {
+        postData.set_state = 'failure'
         runLog.log.warn('Status code was not 0, it was: ' + code)
         runLog.log.warn('Data from container:', {
           message: message
