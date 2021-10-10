@@ -85,7 +85,7 @@ function createJob (config, job: Job, gitRev) {
         Binds: binds,
         TTy: false
       })
-      const totalTime = Date.now() - startTime + 100
+      const totalTime = Date.now() - startTime
       runLog.log.info({ containerTime: totalTime }, 'Total time was ' + totalTime)
       const code = container.output.StatusCode
       runLog.log.info('Container ended with status code ' + code)
