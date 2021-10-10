@@ -12,12 +12,18 @@ const docker = new Docker()
 const request = require('request')
 
 const binds = []
-const hostConfig = {
-  Memory: 2147483648,
-  Binds: binds,
-  autoRemove: true
+const getHostConfig = function (type: string) {
+  const hostConfig = {
+    Memory: 2147483648,
+    Binds: binds,
+    autoRemove: true
+  }
+  if (type === 'update') {
+    // For now just making sure the coding standard is correct.
+    hostConfig.Binds = []
+  }
+  return hostConfig
 }
-
 function createJob (config, job: Job, gitRev) {
   return async function (callback) {
     const data = job.data
@@ -29,7 +35,13 @@ function createJob (config, job: Job, gitRev) {
     if (!data.composer_version) {
       data.composer_version = '1'
     }
-    const dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
+    let dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
+    // Of course, if the job is trying to say that the type is different, we might want to also use a different image.
+    let type = 'update'
+    if (data.type === 'violinist_needs_update_checker') {
+      dockerImage = 'needs-update-check-runner'
+      type = 'needsUpdate'
+    }
     var runLog = new Runlog(data)
     runLog.log.info('Using image', dockerImage)
     const res = https.get(config.healthCheckUrl)
@@ -68,7 +80,7 @@ function createJob (config, job: Job, gitRev) {
     var startTime = Date.now()
     try {
       const container = await docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
-        HostConfig: hostConfig,
+        HostConfig: getHostConfig(type),
         Env: env,
         Binds: binds,
         TTy: false
