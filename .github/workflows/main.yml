@@ -24,6 +24,10 @@ jobs:
       - run: docker pull violinist/update-check-runner:7.0-multi-composer-1
       - run: npm install
       - run: npm test
+        env:
+          CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
+          CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
+          CI_AWS_REGION: ${{ secrets.eu-west-2 }}
       - run: /bin/sh ./clean-repo.sh
         if: matrix.node == 14
       - run: npm run coverage

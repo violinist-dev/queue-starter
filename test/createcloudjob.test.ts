@@ -1,4 +1,5 @@
 import * as should from 'should';
+import * as AWS from 'aws-sdk'
 import { Job } from '../src/job';
 const proxyquire = require('proxyquire').noCallThru();
 import * as fakeRunlog from "./src/fakeRunLog";
@@ -7,6 +8,8 @@ import fakeWatchClient from "./src/fakeWatchClient"
 import promisify from "../src/promisify"
 import * as fakePublisher from "./src/fakePublisher"
 const supportedVersions = require("../src/supportedPhpVersions")
+const composerVersions = [1, 2]
+import { createEcsTaskDefinition } from "../src/createCloudJob";
 
 describe('createCloudJob', () => {
 
@@ -55,6 +58,31 @@ describe('createCloudJob', () => {
         })
     })
 
+    it('Should totally have all the images as tasks in AWS', async () => {
+        const awsconfig = {
+            accessKeyId: process.env.CI_ACCESS_KEY_ID,
+            secretAccessKey: process.env.CI_SECRET_KEY,
+            region: process.env.CI_AWS_REGION,
+        }
+        const client = new AWS.ECS(awsconfig)
+        let tasks = await client.listTaskDefinitions().promise()
+        // Now go through all PHP versions and all composer versions, and see that we have
+        // a matching definition for them.
+        for (const delta in supportedVersions) {
+            for (const cDelta in composerVersions) {
+                const composerVersion = composerVersions[cDelta]
+                const php_version = supportedVersions[delta]
+                const taskName = createEcsTaskDefinition({
+                    php_version,
+                    composer_version: composerVersion
+                })
+                tasks.taskDefinitionArns.filter((item) => {
+                    return item.includes(taskName)
+                }).length.should.not.equal(0)
+            }
+        }
+    })
+
     it('Should try to start the images expected', async () => {
         let { createCloudJob } = proxyquire('../src/createCloudJob', {
             'aws-sdk': {
@@ -72,7 +100,6 @@ describe('createCloudJob', () => {
             '7.4': 'violinist-74-composer-',
             '8.0': 'violinist-80-composer-'
         }
-        const composerVersions = [1, 2]
         for (const delta in supportedVersions) {
             for (const cDelta in composerVersions) {
                 const composerVersion = composerVersions[cDelta]
