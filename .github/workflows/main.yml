@@ -23,9 +23,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: docker pull violinist/update-check-runner:7.0-multi-composer-1
       - run: npm install
-      - run: |
-          echo "{}" > config.json
-          npm test
+      - run: echo "{}" > config.json
+      - run: npm test
         env:
           CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
           CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
