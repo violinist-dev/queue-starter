@@ -146,4 +146,4 @@ const createCloudJob = (config, job: Job, gitRev) => {
   }
 }
 
-export {createCloudJob, createEcsTaskDefinition}
+export { createCloudJob, createEcsTaskDefinition }
