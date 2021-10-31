@@ -29,7 +29,7 @@ const createEcsTaskDefinition = (data) => {
   return util.format('violinist-%s-composer-%s', createEcsName(data), data.composer_version)
 }
 
-export function createCloudJob (config, job: Job, gitRev) {
+const createCloudJob = (config, job: Job, gitRev) => {
   return async function runJob (callback) {
     const logData = job.data
     const data = job.data
@@ -145,3 +145,5 @@ export function createCloudJob (config, job: Job, gitRev) {
     }
   }
 }
+
+export { createCloudJob, createEcsTaskDefinition }
