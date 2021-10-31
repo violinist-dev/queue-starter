@@ -61,7 +61,8 @@ var createEcsTaskDefinition = function (data) {
     }
     return util.format('violinist-%s-composer-%s', createEcsName(data), data.composer_version);
 };
-function createCloudJob(config, job, gitRev) {
+exports.createEcsTaskDefinition = createEcsTaskDefinition;
+var createCloudJob = function (config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
             var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1;
@@ -204,6 +205,6 @@ function createCloudJob(config, job, gitRev) {
             });
         });
     };
-}
+};
 exports.createCloudJob = createCloudJob;
 //# sourceMappingURL=createCloudJob.js.map
