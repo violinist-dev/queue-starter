@@ -114,7 +114,8 @@ const createCloudJob = (config, job: Job, gitRev) => {
         } catch (logErr) {
 
         }
-        if (retries > 240) {
+        // We are allowed to wait for 3 hours. Thats a very long time, by the way...
+        if (retries > 2160) {
           throw new Error('Retries reached: ' + retries)
         }
         await sleep(5000)

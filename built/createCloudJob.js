@@ -164,7 +164,8 @@ var createCloudJob = function (config, job, gitRev) {
                         logErr_1 = _a.sent();
                         return [3 /*break*/, 7];
                     case 7:
-                        if (retries > 240) {
+                        // We are allowed to wait for 3 hours. Thats a very long time, by the way...
+                        if (retries > 2160) {
                             throw new Error('Retries reached: ' + retries);
                         }
                         return [4 /*yield*/, sleep(5000)];
