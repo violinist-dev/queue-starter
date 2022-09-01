@@ -24,7 +24,11 @@ jobs:
       - run: docker pull violinist/update-check-runner:7.0-multi-composer-1
       - run: npm install
       - run: echo "{}" > config.json
-      - run: npm test
+      - run: |
+          ./node_modules/.bin/tsc
+          npm run lint
+          ./node_modules/.bin/mocha
+          |
         env:
           CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
           CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
