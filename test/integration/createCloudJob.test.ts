@@ -5,7 +5,7 @@ const composerVersions = [1, 2]
 const supportedVersions = require("../../src/supportedPhpVersions")
 
 
-describe('createCloudJob', () => {
+describe('createCloudJob integration tests', () => {
 
     it('Should totally have all the images as tasks in AWS', async () => {
         const awsconfig = {

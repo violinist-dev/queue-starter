@@ -29,10 +29,10 @@ function createJob (config, job: Job, gitRev) {
     data.violinist_revision = gitRev
     data.violinist_hostname = config.hostname
     if (!data.php_version) {
-      data.php_version = '7.0'
+      data.php_version = '8.0'
     }
     if (!data.composer_version) {
-      data.composer_version = '1'
+      data.composer_version = '2'
     }
     let dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
     // Of course, if the job is trying to say that the type is different, we might want to also use a different image.
