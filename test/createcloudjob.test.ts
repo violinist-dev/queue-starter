@@ -56,7 +56,7 @@ describe('createCloudJob', () => {
         })
     })
 
-    it('Should try to start the images expected', async () => {
+    it('Should try to start the cloud images expected', async () => {
         let { createCloudJob } = proxyquire('../src/createCloudJob', {
             'aws-sdk': {
                 ECS: fakeEcs,
@@ -72,7 +72,8 @@ describe('createCloudJob', () => {
             '7.3': 'violinist-73-composer-',
             '7.4': 'violinist-74-composer-',
             '8.0': 'violinist-80-composer-',
-            '8.1': 'violinist-81-composer-'
+            '8.1': 'violinist-81-composer-',
+            '8.2': 'violinist-82-composer-',
         }
         for (const delta in supportedVersions) {
             for (const cDelta in composerVersions) {

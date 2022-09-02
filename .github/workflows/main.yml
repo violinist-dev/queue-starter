@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - run: docker pull violinist/update-check-runner:7.0-multi-composer-1
+      - run: docker pull violinist/update-check-runner:8.0-multi-composer-2
       - run: npm install
       - run: echo "{}" > config.json
       - run: |
