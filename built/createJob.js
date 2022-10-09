@@ -47,15 +47,19 @@ var promisify_1 = require("./promisify");
 var docker = new Docker();
 var request = require('request');
 var binds = [];
-var getHostConfig = function (type) {
+var getHostConfig = function (type, config) {
     var hostConfig = {
         Memory: 2147483648,
         Binds: binds,
-        autoRemove: true
+        autoRemove: true,
+        ExtraHosts: []
     };
     if (type === 'update') {
         // For now just making sure the coding standard is correct.
         hostConfig.Binds = [];
+    }
+    if (config.extraHosts) {
+        hostConfig.ExtraHosts = config.extraHosts;
     }
     return hostConfig;
 };
@@ -117,7 +121,7 @@ function createJob(config, job, gitRev) {
                     case 1:
                         _a.trys.push([1, 7, , 8]);
                         return [4 /*yield*/, docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
-                                HostConfig: getHostConfig(type),
+                                HostConfig: getHostConfig(type, config),
                                 Env: env,
                                 Binds: binds,
                                 TTy: false

@@ -11,15 +11,19 @@ const docker = new Docker()
 const request = require('request')
 
 const binds = []
-const getHostConfig = function (type: string) {
+const getHostConfig = function (type: string, config) {
   const hostConfig = {
     Memory: 2147483648,
     Binds: binds,
-    autoRemove: true
+    autoRemove: true,
+    ExtraHosts: []
   }
   if (type === 'update') {
     // For now just making sure the coding standard is correct.
     hostConfig.Binds = []
+  }
+  if (config.extraHosts) {
+    hostConfig.ExtraHosts = config.extraHosts
   }
   return hostConfig
 }
@@ -75,7 +79,7 @@ function createJob (config, job: Job, gitRev) {
     var startTime = Date.now()
     try {
       const container = await docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
-        HostConfig: getHostConfig(type),
+        HostConfig: getHostConfig(type, config),
         Env: env,
         Binds: binds,
         TTy: false
