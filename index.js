@@ -55,6 +55,9 @@ async function start () {
 }
 
 async function queuePull () {
+  if (config.runCloud) {
+    return
+  }
   const imgs = supportedPhpVersions
   const jobs = imgs.map(async (version) => {
     var imgs = [
