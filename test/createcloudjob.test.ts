@@ -23,7 +23,8 @@ describe('createCloudJob', () => {
     it('Should export like expected and fail like expected', (done) => {
         let { createCloudJob } = proxyquire('../src/createCloudJob', {
             'aws-sdk': () => {},
-            './RunLog': fakeRunlog
+            './RunLog': fakeRunlog,
+            './publisher': fakePublisher,
         })
         let run = createCloudJob({}, new Job({}), 'efef')
         should(run).be.instanceOf(Function)
