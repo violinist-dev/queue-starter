@@ -141,6 +141,26 @@ const createCloudJob = (config, job: Job, gitRev) => {
       callback()
     } catch (err) {
       runLog.log.error(err, 'There was an error running a cloud task')
+      // Let's create an indication that this did not go so well, did it.
+      const message = {
+        stdout: [
+          JSON.stringify([{
+            message: 'There was an error completing the job task. The error message was: ' + err.message,
+            type: 'message'
+          }])
+        ],
+        stderr: ''
+      }
+      const updateData = {
+        jobId: data.job_id,
+        token: config.token,
+        message,
+        // This field is actually not even used at the moment I think. That's too bad.
+        set_state: 'failure'
+      }
+      const publisher = new Publisher(config)
+      const statusData = await promisify(publisher.publish.bind(publisher, updateData))
+      runLog.log.info('Job complete request code: ' + statusData.statusCode)
       // We do not care if things go ok, since things are queued so many times anyway.
       callback()
     }
