@@ -8,6 +8,10 @@ import Publisher from './publisher'
 import { Runlog } from './RunLog'
 import promisify from './promisify'
 
+const createLogGroup = (taskDefinition) => {
+  return util.format('/ecs/%s', taskDefinition)
+}
+
 const createEcsName = (data) => {
   // Should be named like this:
   // PHP version 7.1 => 71
@@ -104,7 +108,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         try {
           retries++
           const list = await watchClient.getLogEvents({
-            logGroupName: util.format('/ecs/%s', taskDefinition),
+            logGroupName: createLogGroup(taskDefinition),
             logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           }).promise()
           events = list.events
@@ -116,7 +120,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         }
         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
         if (retries > 2160) {
-          throw new Error('Retries reached: ' + retries)
+          throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later')
         }
         await sleep(5000)
       }
@@ -167,4 +171,4 @@ const createCloudJob = (config, job: Job, gitRev) => {
   }
 }
 
-export { createCloudJob, createEcsTaskDefinition }
+export { createCloudJob, createEcsTaskDefinition, createLogGroup }
