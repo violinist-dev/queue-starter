@@ -166,7 +166,7 @@ var createCloudJob = function (config, job, gitRev) {
                     case 7:
                         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
                         if (retries > 2160) {
-                            throw new Error('Retries reached: ' + retries);
+                            throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later');
                         }
                         return [4 /*yield*/, sleep(5000)];
                     case 8:
