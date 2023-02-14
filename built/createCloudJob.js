@@ -42,6 +42,10 @@ var sleep = require("await-sleep");
 var publisher_1 = require("./publisher");
 var RunLog_1 = require("./RunLog");
 var promisify_1 = require("./promisify");
+var createLogGroup = function (taskDefinition) {
+    return util.format('/ecs/%s', taskDefinition);
+};
+exports.createLogGroup = createLogGroup;
 var createEcsName = function (data) {
     // Should be named like this:
     // PHP version 7.1 => 71
@@ -150,7 +154,7 @@ var createCloudJob = function (config, job, gitRev) {
                         _a.trys.push([4, 6, , 7]);
                         retries++;
                         return [4 /*yield*/, watchClient.getLogEvents({
-                                logGroupName: util.format('/ecs/%s', taskDefinition),
+                                logGroupName: createLogGroup(taskDefinition),
                                 logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
                             }).promise()];
                     case 5:

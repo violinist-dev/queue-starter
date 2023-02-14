@@ -8,6 +8,10 @@ import Publisher from './publisher'
 import { Runlog } from './RunLog'
 import promisify from './promisify'
 
+const createLogGroup = (taskDefinition) => {
+  return util.format('/ecs/%s', taskDefinition)
+}
+
 const createEcsName = (data) => {
   // Should be named like this:
   // PHP version 7.1 => 71
@@ -104,7 +108,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         try {
           retries++
           const list = await watchClient.getLogEvents({
-            logGroupName: util.format('/ecs/%s', taskDefinition),
+            logGroupName: createLogGroup(taskDefinition),
             logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           }).promise()
           events = list.events
@@ -167,4 +171,4 @@ const createCloudJob = (config, job: Job, gitRev) => {
   }
 }
 
-export { createCloudJob, createEcsTaskDefinition }
+export { createCloudJob, createEcsTaskDefinition, createLogGroup }
