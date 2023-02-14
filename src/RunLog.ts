@@ -12,7 +12,7 @@ export class Runlog {
         data.name = ''
       }
       if (!data.composer_version) {
-        data.composer_version = 2;
+        data.composer_version = 2
       }
       this.log = log.child({ composer_version: data.composer_version, job_id: data.job_id, slug: data.slug, php: data.php_version, cloud: !!data.cloud, taskName: data.name, taskDefinition: data.taskDefinition })
       this.log.info('Creating a run log')
