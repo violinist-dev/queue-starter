@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - run: docker pull ghcr.io/violinist/update-check-runner:8.0-multi-composer-2
+      - run: docker pull ghcr.io/violinist-dev/update-check-runner:8.0-multi-composer-2
       - run: npm install
       - run: echo "{}" > config.json
       - run: npm test
