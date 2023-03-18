@@ -55,7 +55,7 @@ describe('createJob', () => {
                     imageStarted = logItem[1]
                 }
             })
-            imageStarted.should.equal(`violinist/update-check-runner:${php_version}-multi-composer-2`)
+            imageStarted.should.equal(`ghcr.io/violinist-dev/update-check-runner:${php_version}-multi-composer-2`)
             should(hasStartMessage).equal(true)
         })
         return Promise.all(jobs)
