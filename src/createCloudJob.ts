@@ -8,6 +8,10 @@ import Publisher from './publisher'
 import { Runlog } from './RunLog'
 import promisify from './promisify'
 
+const createLogGroup = (taskDefinition) => {
+  return util.format('/ecs/%s', taskDefinition)
+}
+
 const createEcsName = (data) => {
   // Should be named like this:
   // PHP version 7.1 => 71
@@ -104,7 +108,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         try {
           retries++
           const list = await watchClient.getLogEvents({
-            logGroupName: util.format('/ecs/%s', taskDefinition),
+            logGroupName: createLogGroup(taskDefinition),
             logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           }).promise()
           events = list.events
@@ -116,7 +120,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         }
         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
         if (retries > 2160) {
-          throw new Error('Retries reached: ' + retries)
+          throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later')
         }
         await sleep(5000)
       }
@@ -141,10 +145,30 @@ const createCloudJob = (config, job: Job, gitRev) => {
       callback()
     } catch (err) {
       runLog.log.error(err, 'There was an error running a cloud task')
+      // Let's create an indication that this did not go so well, did it.
+      const message = {
+        stdout: [
+          JSON.stringify([{
+            message: 'There was an error completing the job task. The error message was: ' + err.message,
+            type: 'message'
+          }])
+        ],
+        stderr: ''
+      }
+      const updateData = {
+        jobId: data.job_id,
+        token: config.token,
+        message,
+        // This field is actually not even used at the moment I think. That's too bad.
+        set_state: 'failure'
+      }
+      const publisher = new Publisher(config)
+      const statusData = await promisify(publisher.publish.bind(publisher, updateData))
+      runLog.log.info('Job complete request code: ' + statusData.statusCode)
       // We do not care if things go ok, since things are queued so many times anyway.
       callback()
     }
   }
 }
 
-export { createCloudJob, createEcsTaskDefinition }
+export { createCloudJob, createEcsTaskDefinition, createLogGroup }

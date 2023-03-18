@@ -42,6 +42,10 @@ var sleep = require("await-sleep");
 var publisher_1 = require("./publisher");
 var RunLog_1 = require("./RunLog");
 var promisify_1 = require("./promisify");
+var createLogGroup = function (taskDefinition) {
+    return util.format('/ecs/%s', taskDefinition);
+};
+exports.createLogGroup = createLogGroup;
 var createEcsName = function (data) {
     // Should be named like this:
     // PHP version 7.1 => 71
@@ -65,7 +69,7 @@ exports.createEcsTaskDefinition = createEcsTaskDefinition;
 var createCloudJob = function (config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1;
+            var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1, message, updateData, publisher, statusData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -80,7 +84,7 @@ var createCloudJob = function (config, job, gitRev) {
                         runLog.log.info('Trying to start cloud job for ' + logData.slug);
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 11, , 12]);
+                        _a.trys.push([1, 11, , 13]);
                         awsconfig = {
                             accessKeyId: config.accessKeyId,
                             secretAccessKey: config.secretAccessKey,
@@ -150,7 +154,7 @@ var createCloudJob = function (config, job, gitRev) {
                         _a.trys.push([4, 6, , 7]);
                         retries++;
                         return [4 /*yield*/, watchClient.getLogEvents({
-                                logGroupName: util.format('/ecs/%s', taskDefinition),
+                                logGroupName: createLogGroup(taskDefinition),
                                 logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
                             }).promise()];
                     case 5:
@@ -166,7 +170,7 @@ var createCloudJob = function (config, job, gitRev) {
                     case 7:
                         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
                         if (retries > 2160) {
-                            throw new Error('Retries reached: ' + retries);
+                            throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later');
                         }
                         return [4 /*yield*/, sleep(5000)];
                     case 8:
@@ -194,14 +198,35 @@ var createCloudJob = function (config, job, gitRev) {
                         statusData = _a.sent();
                         runLog.log.info('Job complete request code: ' + statusData.statusCode);
                         callback();
-                        return [3 /*break*/, 12];
+                        return [3 /*break*/, 13];
                     case 11:
                         err_1 = _a.sent();
                         runLog.log.error(err_1, 'There was an error running a cloud task');
+                        message = {
+                            stdout: [
+                                JSON.stringify([{
+                                        message: 'There was an error completing the job task. The error message was: ' + err_1.message,
+                                        type: 'message'
+                                    }])
+                            ],
+                            stderr: ''
+                        };
+                        updateData = {
+                            jobId: data.job_id,
+                            token: config.token,
+                            message: message,
+                            // This field is actually not even used at the moment I think. That's too bad.
+                            set_state: 'failure'
+                        };
+                        publisher = new publisher_1.default(config);
+                        return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, updateData))];
+                    case 12:
+                        statusData = _a.sent();
+                        runLog.log.info('Job complete request code: ' + statusData.statusCode);
                         // We do not care if things go ok, since things are queued so many times anyway.
                         callback();
-                        return [3 /*break*/, 12];
-                    case 12: return [2 /*return*/];
+                        return [3 /*break*/, 13];
+                    case 13: return [2 /*return*/];
                 }
             });
         });
