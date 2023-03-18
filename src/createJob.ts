@@ -38,7 +38,7 @@ function createJob (config, job: Job, gitRev) {
     if (!data.composer_version) {
       data.composer_version = '2'
     }
-    let dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
+    let dockerImage = util.format('ghcr.io/violinist-dev/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version)
     // Of course, if the job is trying to say that the type is different, we might want to also use a different image.
     let type = 'update'
     if (data.type === 'violinist_needs_update_checker') {
