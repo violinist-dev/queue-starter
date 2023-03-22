@@ -8,7 +8,7 @@ const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostna
 function createPullJob (version) {
   return async function () {
     try {
-      const img = 'violinist/update-check-runner:' + version
+      const img = 'ghcr.io/violinist-dev/update-check-runner:' + version
       log.info({
         img
       }, 'Pulling img for ' + img)

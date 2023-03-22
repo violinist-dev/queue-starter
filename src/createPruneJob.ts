@@ -13,7 +13,7 @@ function createPruneJob (img) {
       }, 'Prune img for ' + img)
       const startTime = Date.now()
       const pruneData = await promisify(docker.pruneImages.bind(docker, {
-        label: 'violinist/update-check-runner:' + img,
+        label: 'ghcr.io/violinist-dev/update-check-runner:' + img,
         dangling: true
       }))
       log.info({
