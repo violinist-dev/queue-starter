@@ -79,7 +79,7 @@ function createJob(config, job, gitRev) {
                         if (!data.composer_version) {
                             data.composer_version = '2';
                         }
-                        dockerImage = util.format('violinist/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version);
+                        dockerImage = util.format('ghcr.io/violinist-dev/update-check-runner:%s-multi-composer-%s', data.php_version, data.composer_version);
                         type = 'update';
                         if (data.type === 'violinist_needs_update_checker') {
                             dockerImage = 'needs-update-check-runner';
