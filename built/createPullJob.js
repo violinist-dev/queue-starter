@@ -58,7 +58,7 @@ function createPullJob(version) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 14, , 15]);
-                        img = 'violinist/update-check-runner:' + version;
+                        img = 'ghcr.io/violinist-dev/update-check-runner:' + version;
                         log.info({
                             img: img
                         }, 'Pulling img for ' + img);

@@ -55,7 +55,7 @@ function createPruneJob(img) {
                         }, 'Prune img for ' + img);
                         startTime = Date.now();
                         return [4 /*yield*/, promisify_1.default(docker.pruneImages.bind(docker, {
-                                label: 'violinist/update-check-runner:' + img,
+                                label: 'ghcr.io/violinist-dev/update-check-runner:' + img,
                                 dangling: true
                             }))];
                     case 1:
