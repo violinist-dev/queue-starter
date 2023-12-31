@@ -13,7 +13,7 @@ git.short(function (str) {
 const findJob = require('./findJob')
 
 var stopTheThing = false
-function stopIt() {
+function stopIt () {
   stopTheThing = true
 }
 
@@ -21,7 +21,7 @@ const queue = require('queue')
 var startFuncQueue = queue()
 startFuncQueue.concurrency = 1
 
-async function createStart(config, q, cloudQueue) {
+async function createStart (config, q, cloudQueue) {
   if (stopTheThing) {
     return
   }
