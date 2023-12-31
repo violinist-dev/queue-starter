@@ -1,5 +1,4 @@
 --require ts-node/register
---require src/mocha-unhandled
 --require source-map-support/register
 --recursive
 --no-timeouts
