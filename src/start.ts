@@ -12,26 +12,29 @@ git.short(function (str) {
 })
 const findJob = require('./findJob')
 
-var startInProgress = false
+var stopTheThing = false
+function stopIt() {
+  stopTheThing = true
+}
 
-async function start (config, q, cloudQueue) {
-  if (startInProgress) {
+const queue = require('queue')
+var startFuncQueue = queue()
+startFuncQueue.concurrency = 1
+
+async function createStart(config, q, cloudQueue) {
+  if (stopTheThing) {
     return
   }
-  console.log('starting')
-  startInProgress = true
   const sleepTime = config.sleepTime ? config.sleepTime : 1000
   const cloudSleepTime = config.cloudSleepTime ? config.cloudSleepTime : 3000
   const completeCallback = config.completeCallback ? config.completeCallback : start
   const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname })
   const job = await findJob(log, config)
   if (!job || !job.data || !job.data.job_id) {
-    if (!q.length) {
+    if (!q.length && !cloudQueue.length) {
       await sleep(sleepTime)
-      // If we are now running something, we don't need to restart.
-      if (!q.length) {
-        startInProgress = false
-        completeCallback(config, q, cloudQueue)
+      if (!q.length && !cloudQueue.length) {
+        await completeCallback(config, q, cloudQueue)
       }
     } else {
       log.info('It seems we already have a something in the queue, trusting job search to be coming up')
@@ -44,14 +47,17 @@ async function start (config, q, cloudQueue) {
     cloudQueue.push(run)
     cloudQueue.start()
     await sleep(cloudSleepTime)
-    startInProgress = false
-    completeCallback(config, q, cloudQueue)
+    await completeCallback(config, q, cloudQueue)
   } else {
-    startInProgress = false
     const run = createJob(config, job, gitRev)
     q.push(run)
     q.start()
   }
+}
+
+async function start (config, q, cloudQueue) {
+  startFuncQueue.push(createStart.bind(null, config, q, cloudQueue))
+  startFuncQueue.start()
 }
 
 async function queuePull (config, q) {
@@ -75,4 +81,4 @@ async function queuePull (config, q) {
   setTimeout(queuePull.bind(null, config, q), (60 * 1000 * 60))
 }
 
-export { queuePull, start }
+export { queuePull, start, stopIt }

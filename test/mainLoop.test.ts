@@ -1,4 +1,41 @@
 import * as should from 'should'
+const http = require('http')
+var counter = 1
+var port = 25212
+var lastReq
+var smallestInterval
+const server = http.createServer(function (req, res) {
+    if (req.url === "/http-queue/get-a-job") {
+        if (!lastReq) {
+            lastReq = Date.now()
+        } else {
+            const reqInterval = Date.now() - lastReq
+            if (!smallestInterval) {
+                smallestInterval = reqInterval
+            }
+            if (smallestInterval > reqInterval) {
+                smallestInterval = reqInterval
+            }
+            lastReq = Date.now()
+        }
+    }
+    if (counter % 10 === 0) {
+        res.setHeader('x-violinist-aws', 1)
+    }
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.write(JSON.stringify({
+        job_id: counter,
+        payload: JSON.stringify({
+            data: {
+                job_id: counter
+            },
+            php_version: '8.3'
+        })
+    }));
+    counter++
+    res.end();
+});
+server.listen(port)
 const sleep = require('await-sleep')
 import { Job } from '../src/job'
 var jobPool = []
@@ -25,25 +62,27 @@ const fakeFindJob = async (log, config) => {
 const fakeCreateCloudJob = {
     createCloudJob: (config, job: Job, gitRev) => {
         return async function runJob (callback) {
-            await sleep(4000)
+            await sleep(1000)
             callback()
         }
     }
 }
 const proxyquire = require('proxyquire').noCallThru();
-const { start } = proxyquire('../src/start', {
-    './findJob': fakeFindJob,
+const { start, stopIt } = proxyquire('../src/start', {
     './createCloudJob': fakeCreateCloudJob
 })
 
 var startCalls = 0
 const wrappedStart = async(config, q, cloudQueue) => {
     startCalls++
-    if (startCalls > 3) {
-        throw new Error('More than 3 start calls over here')
+    if (startCalls > 40) {
+        return
     }
-    console.log(startCalls)
-    return start(config, q, cloudQueue)
+    let promise = new Promise<null>(async (resolve, reject) => {
+        await start(config, q, cloudQueue)
+        resolve(null)
+    })
+    return promise
 }
 
 const queue = require('queue')
@@ -56,23 +95,23 @@ describe('That main function polling over there', () => {
             findJobCalls: 0,
             completeCallback: wrappedStart,
             endedCalls: 0,
-            baseUrl: 'http://example.com',
+            baseUrl: 'http://localhost:' + port,
             runCloud: true,
             hostname: 'myHostName',
             sleepTime: 100
         }
         myCloudQueue.on('end', function() {
-            myConfig.endedCalls++
-            console.log('queue end')
             wrappedStart(myConfig, myQueue, myCloudQueue)
         })
         let promise = new Promise<null>(async (resolve, reject) => {
             await wrappedStart(myConfig, myQueue, myCloudQueue)
-            while (true) {
+            while (startCalls <= 40) {
                 await sleep(1)
-                if (startCalls === 3) {
-                    resolve(null)
-                }
+            }
+            stopIt()
+            server.close()
+            if (smallestInterval < 100) {
+                throw new Error('Smallest interval (' + smallestInterval + ') was smaller than the smallest pause')
             }
             resolve(null)
         })
