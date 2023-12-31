@@ -57,10 +57,12 @@ function findJob(log, config) {
                     return [4 /*yield*/, fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)];
                 case 1:
                     res = _a.sent();
-                    healthRes = https.get(config.healthCheckUrl);
-                    healthRes.on('error', function (err) {
-                        log.error(err);
-                    });
+                    if (config.healthCheckUrl) {
+                        healthRes = https.get(config.healthCheckUrl);
+                        healthRes.on('error', function (err) {
+                            log.error(err);
+                        });
+                    }
                     awsEnabled = res.headers.get('x-violinist-aws');
                     if (!awsEnabled && awsRequired) {
                         return [2 /*return*/, new Promise(function (resolve) {
