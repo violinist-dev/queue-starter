@@ -15,10 +15,12 @@ async function findJob (log, config) : Promise<Job> {
     }
     const awsRequired = config.runCloud
     const res = await fetchLib(config.baseUrl + '/http-queue/get-a-job', optsWithHeaders)
-    const healthRes = https.get(config.healthCheckUrl)
-    healthRes.on('error', err => {
-      log.error(err)
-    })
+    if (config.healthCheckUrl) {
+      const healthRes = https.get(config.healthCheckUrl)
+      healthRes.on('error', err => {
+        log.error(err)
+      })
+    }
     const awsEnabled = res.headers.get('x-violinist-aws')
     if (!awsEnabled && awsRequired) {
       return new Promise<Job>(resolve => {
