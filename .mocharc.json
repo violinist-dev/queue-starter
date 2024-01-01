@@ -4,6 +4,6 @@
     "ts-node/register"
   ],
   "spec": [
-    "tests/*.ts"
+    "test/*.ts"
   ]
 }
