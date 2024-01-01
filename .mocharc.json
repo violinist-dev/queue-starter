@@ -2,7 +2,8 @@
   "timeout": 10000,
   "recursive": true,
   "require": [
-    "ts-node/register"
+    "ts-node/register",
+    "source-map-support/register"
   ],
   "node-option": [
     "unhandled-rejections=strict"
