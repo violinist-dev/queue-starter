@@ -31,6 +31,11 @@ async function createStart (config, q, cloudQueue) {
   const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname })
   const job = await findJob(log, config)
   if (!job || !job.data || !job.data.job_id) {
+    if (config.runCloud) {
+      await sleep(cloudSleepTime)
+      await completeCallback(config, q, cloudQueue)
+      return
+    }
     if (!q.length && !cloudQueue.length) {
       await sleep(sleepTime)
       if (!q.length && !cloudQueue.length) {

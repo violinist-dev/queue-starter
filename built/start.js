@@ -73,40 +73,49 @@ function createStart(config, q, cloudQueue) {
                     return [4 /*yield*/, findJob(log, config)];
                 case 1:
                     job = _a.sent();
-                    if (!(!job || !job.data || !job.data.job_id)) return [3 /*break*/, 7];
-                    if (!(!q.length && !cloudQueue.length)) return [3 /*break*/, 5];
-                    return [4 /*yield*/, sleep(sleepTime)];
+                    if (!(!job || !job.data || !job.data.job_id)) return [3 /*break*/, 10];
+                    if (!config.runCloud) return [3 /*break*/, 4];
+                    return [4 /*yield*/, sleep(cloudSleepTime)];
                 case 2:
                     _a.sent();
-                    if (!(!q.length && !cloudQueue.length)) return [3 /*break*/, 4];
                     return [4 /*yield*/, completeCallback(config, q, cloudQueue)];
                 case 3:
                     _a.sent();
-                    _a.label = 4;
-                case 4: return [3 /*break*/, 6];
+                    return [2 /*return*/];
+                case 4:
+                    if (!(!q.length && !cloudQueue.length)) return [3 /*break*/, 8];
+                    return [4 /*yield*/, sleep(sleepTime)];
                 case 5:
+                    _a.sent();
+                    if (!(!q.length && !cloudQueue.length)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, completeCallback(config, q, cloudQueue)];
+                case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7: return [3 /*break*/, 9];
+                case 8:
                     log.info('It seems we already have a something in the queue, trusting job search to be coming up');
-                    _a.label = 6;
-                case 6: return [2 /*return*/];
-                case 7:
-                    if (!config.runCloud) return [3 /*break*/, 10];
+                    _a.label = 9;
+                case 9: return [2 /*return*/];
+                case 10:
+                    if (!config.runCloud) return [3 /*break*/, 13];
                     log.info('Starting cloud job');
                     run_1 = createCloudJob(config, job, gitRev);
                     cloudQueue.push(run_1);
                     cloudQueue.start();
                     return [4 /*yield*/, sleep(cloudSleepTime)];
-                case 8:
+                case 11:
                     _a.sent();
                     return [4 /*yield*/, completeCallback(config, q, cloudQueue)];
-                case 9:
+                case 12:
                     _a.sent();
-                    return [3 /*break*/, 11];
-                case 10:
+                    return [3 /*break*/, 14];
+                case 13:
                     run_2 = createJob(config, job, gitRev);
                     q.push(run_2);
                     q.start();
-                    _a.label = 11;
-                case 11: return [2 /*return*/];
+                    _a.label = 14;
+                case 14: return [2 /*return*/];
             }
         });
     });
