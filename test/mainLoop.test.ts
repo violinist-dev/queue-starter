@@ -47,6 +47,7 @@ while (jobPool.length < 2) {
     })
     jobPool.push(job)
 }
+const fakeBunyan = require('./src/fakeBunyan')
 const fakeFindJob = async (log, config) => {
     config.findJobCalls++
     var job = jobPool.shift()
@@ -69,6 +70,7 @@ const fakeCreateCloudJob = {
 }
 const proxyquire = require('proxyquire').noCallThru();
 const { start, stopIt } = proxyquire('../src/start', {
+    'bunyan':  fakeBunyan,
     './createCloudJob': fakeCreateCloudJob
 })
 
