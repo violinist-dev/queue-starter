@@ -51,14 +51,15 @@ const fakeCreateCloudJob = {
     createCloudJob: (config, job: Job, gitRev) => {
         return async function runJob (callback) {
             await sleep(cloudTakesTime)
-            console.log('job complete')
             callback()
         }
     }
 }
 const proxyquire = require('proxyquire').noCallThru();
+const fakeBunyan = require('./src/fakeBunyan')
 const { start, stopIt } = proxyquire('../src/start', {
-    './createCloudJob': fakeCreateCloudJob
+    './createCloudJob': fakeCreateCloudJob,
+    'bunyan': fakeBunyan
 })
 
 const wrappedStart = async(config, q, cloudQueue) => {
