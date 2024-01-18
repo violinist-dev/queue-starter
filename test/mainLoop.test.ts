@@ -98,7 +98,8 @@ describe('That main function polling over there', () => {
             baseUrl: 'http://localhost:' + port,
             runCloud: true,
             hostname: 'myHostName',
-            sleepTime: 100
+            sleepTime: 100,
+            cloudSleepTime: 100
         }
         myCloudQueue.on('end', function() {
             wrappedStart(myConfig, myQueue, myCloudQueue)
