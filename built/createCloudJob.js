@@ -206,7 +206,8 @@ var createCloudJob = function (config, job, gitRev) {
                             stdout: [
                                 JSON.stringify([{
                                         message: 'There was an error completing the job task. The error message was: ' + err_1.message,
-                                        type: 'message'
+                                        type: 'message',
+                                        timestamp: Math.floor(Date.now() / 1000)
                                     }])
                             ],
                             stderr: ''
