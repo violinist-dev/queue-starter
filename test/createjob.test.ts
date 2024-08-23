@@ -26,7 +26,7 @@ describe('createJob', () => {
             should(fakeRunlog.Runlog.getCalls().error.length).not.equal(0)
             let hasErrorMessage = false
             fakeRunlog.Runlog.getCalls().warnings.forEach((logItem) => {
-                console.log(logItem)
+                console.log(logItem[1].stdout)
                 if (logItem[0] === 'Status code was not 0, it was: 1')  {
                     hasErrorMessage = true
                 }
