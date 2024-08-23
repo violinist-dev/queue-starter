@@ -63,7 +63,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
       const env = Object.keys(data).map(key => {
         return {
           name: key,
-          value: job.data[key]
+          value: job.data[key].toString()
         }
       })
       env.push({
