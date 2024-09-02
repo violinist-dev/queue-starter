@@ -120,7 +120,7 @@ function createJob(config, job, gitRev) {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 7, , 8]);
-                        return [4 /*yield*/, docker.run(dockerImage, ['php', 'runner.php'], [stdout, stderr], {
+                        return [4 /*yield*/, docker.run(dockerImage, ['php', '/runner'], [stdout, stderr], {
                                 HostConfig: getHostConfig(type, config),
                                 Env: env,
                                 Binds: binds,
