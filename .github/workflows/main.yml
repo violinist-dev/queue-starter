@@ -44,3 +44,20 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: run
+    steps:
+      - name: Trigger Workflow
+        uses: actions/github-script@v6
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: '${{ secrets.DISPATCH_REPO_OWNER }}}',
+              repo: '${{ secrets.DISPATCH_REPO_REPO }}',
+              workflow_id: 'deploy.yml',
+              ref: 'master',
+            })
