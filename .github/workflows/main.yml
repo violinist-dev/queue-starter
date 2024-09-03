@@ -56,7 +56,7 @@ jobs:
           github-token: ${{ secrets.PAT }}
           script: |
             github.rest.actions.createWorkflowDispatch({
-              owner: '${{ secrets.DISPATCH_REPO_OWNER }}}',
+              owner: '${{ secrets.DISPATCH_REPO_OWNER }}',
               repo: '${{ secrets.DISPATCH_REPO_REPO }}',
               workflow_id: 'deploy.yml',
               ref: 'master',
