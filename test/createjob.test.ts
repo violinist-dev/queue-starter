@@ -19,7 +19,10 @@ describe('createJob', () => {
         })
         let run = createJob({
             baseUrl: 'http://example.com'
-        }, new Job({}), 'efef')
+        }, new Job({
+            'user_token': 'test',
+            'project_url': ''
+        }), 'efef')
         should(run).be.instanceOf(Function)
         should(createJob).be.instanceOf(Function)
         run(_ => {

@@ -103,7 +103,7 @@ var createCloudJob = function (config, job, gitRev) {
                         env = Object.keys(data).map(function (key) {
                             return {
                                 name: key,
-                                value: job.data[key]
+                                value: job.data[key] + ''
                             };
                         });
                         env.push({
