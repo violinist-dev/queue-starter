@@ -78,6 +78,10 @@ function createJob (config, job: Job, gitRev) {
     runLog.log.info('Starting container for', data.slug)
     var startTime = Date.now()
     try {
+      let cmd = '/app/runner'
+      if (data.php_version == '7.2') {
+        cmd = '/app/runner.php'
+      }
       const container = await docker.run(dockerImage, ['php', '/app/runner'], [stdout, stderr], {
         HostConfig: getHostConfig(type, config),
         Env: env,
