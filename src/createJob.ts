@@ -79,8 +79,8 @@ function createJob (config, job: Job, gitRev) {
     var startTime = Date.now()
     try {
       let cmd = '/app/runner'
-      if (data.php_version == '7.2') {
-        cmd = '/app/runner.php'
+      if (data.php_version === '7.2') {
+        cmd = '/usr/src/myapp/runner.php'
       }
       const container = await docker.run(dockerImage, ['php', '/app/runner'], [stdout, stderr], {
         HostConfig: getHostConfig(type, config),
