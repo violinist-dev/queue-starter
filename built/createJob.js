@@ -66,7 +66,7 @@ var getHostConfig = function (type, config) {
 function createJob(config, job, gitRev) {
     return function (callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var data, dockerImage, type, runLog, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, container, totalTime, code, message, data_1, data_2, err_1;
+            var data, dockerImage, type, runLog, publisher, j, cookie, baseUrl, postData, stdout, stdoutdata, stderr, stderrdata, env, startTime, cmd, container, totalTime, code, message, data_1, data_2, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -120,7 +120,11 @@ function createJob(config, job, gitRev) {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 7, , 8]);
-                        return [4 /*yield*/, docker.run(dockerImage, ['php', '/app/runner'], [stdout, stderr], {
+                        cmd = '/app/runner';
+                        if (data.php_version === '7.2') {
+                            cmd = '/usr/src/myapp/runner.php';
+                        }
+                        return [4 /*yield*/, docker.run(dockerImage, ['php', cmd], [stdout, stderr], {
                                 HostConfig: getHostConfig(type, config),
                                 Env: env,
                                 Binds: binds,
