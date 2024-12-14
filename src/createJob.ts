@@ -82,6 +82,9 @@ function createJob (config, job: Job, gitRev) {
       if (data.php_version === '7.2') {
         cmd = '/usr/src/myapp/runner.php'
       }
+      if (data.composer_version === '1') {
+        cmd = '/usr/src/myapp/runner.php'
+      }
       const container = await docker.run(dockerImage, ['php', cmd], [stdout, stderr], {
         HostConfig: getHostConfig(type, config),
         Env: env,
