@@ -9,6 +9,7 @@
     "unhandled-rejections=strict"
   ],
   "spec": [
-    "test/*.ts"
+    "test/*.ts",
+    "test/*/*.ts"
   ]
 }
