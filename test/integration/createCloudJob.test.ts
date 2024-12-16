@@ -1,7 +1,7 @@
 import * as should from 'should';
 import * as AWS from 'aws-sdk'
 import { createEcsTaskDefinition, createLogGroup } from "../../src/createCloudJob";
-const composerVersions = [1, 2]
+const composerVersions = [2]
 const supportedVersions = require("../../src/supportedPhpVersions")
 
 
