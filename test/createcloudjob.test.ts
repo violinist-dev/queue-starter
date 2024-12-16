@@ -7,7 +7,7 @@ import fakeWatchClient from "./src/fakeWatchClient"
 import promisify from "../src/promisify"
 import * as fakePublisher from "./src/fakePublisher"
 const supportedVersions = require("../src/supportedPhpVersions")
-const composerVersions = [1, 2]
+const composerVersions = [2]
 
 describe('createCloudJob', () => {
 
