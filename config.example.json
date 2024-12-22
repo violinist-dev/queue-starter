@@ -1,0 +1,14 @@
+{
+  "token": "token",
+  "healthCheckUrl": "https://ping",
+  "hostname": "my-hostname",
+  "baseUrl": "https://violinist.io",
+  "canStartCloud": 0,
+  "accessKeyId": "id",
+  "runCloud": 0,
+  "secretAccessKey": "key",
+  "region": "eu-west-2",
+  "apiVersion": "latest",
+  "subnet": "subnet-abab",
+  "maxQueueLength": 30
+}
