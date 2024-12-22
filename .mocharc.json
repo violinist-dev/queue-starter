@@ -1,0 +1,15 @@
+{
+  "timeout": 20000,
+  "recursive": true,
+  "require": [
+    "ts-node/register",
+    "source-map-support/register"
+  ],
+  "node-option": [
+    "unhandled-rejections=strict"
+  ],
+  "spec": [
+    "test/*.ts",
+    "test/*/*.ts"
+  ]
+}

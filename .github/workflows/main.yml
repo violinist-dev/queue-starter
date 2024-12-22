@@ -1,6 +1,8 @@
 name: Main CI
 
 on:
+  schedule:
+    - cron: '0 0 * * *' # everyday at midnight 
   push:
     branches:
       - main
@@ -14,11 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [ '14', '16' ]
+        node: 
+          - "20"
+          - "22"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: docker pull ghcr.io/violinist-dev/update-check-runner:8.0-multi-composer-2
@@ -33,8 +37,29 @@ jobs:
         if: matrix.node == 14
       - run: npm run coverage
         if: matrix.node == 14
+        env:
+          CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
+          CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
+          CI_AWS_REGION: ${{ secrets.CI_AWS_REGION }}
       - name: Coveralls
         if: matrix.node == 14
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: run
+    steps:
+      - name: Trigger Workflow
+        uses: actions/github-script@v7
+        if: ${{ github.event_name == 'push' }}
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: '${{ secrets.DISPATCH_REPO_OWNER }}',
+              repo: '${{ secrets.DISPATCH_REPO_REPO }}',
+              workflow_id: 'deploy.yml',
+              ref: 'master',
+            })

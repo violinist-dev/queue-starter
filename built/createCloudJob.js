@@ -103,7 +103,7 @@ var createCloudJob = function (config, job, gitRev) {
                         env = Object.keys(data).map(function (key) {
                             return {
                                 name: key,
-                                value: job.data[key]
+                                value: job.data[key] + ''
                             };
                         });
                         env.push({
@@ -206,7 +206,8 @@ var createCloudJob = function (config, job, gitRev) {
                             stdout: [
                                 JSON.stringify([{
                                         message: 'There was an error completing the job task. The error message was: ' + err_1.message,
-                                        type: 'message'
+                                        type: 'message',
+                                        timestamp: Math.floor(Date.now() / 1000)
                                     }])
                             ],
                             stderr: ''
