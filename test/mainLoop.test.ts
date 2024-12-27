@@ -6,6 +6,12 @@ var port = 25212
 var lastReq
 var smallestInterval
 const server = http.createServer(function (req, res) {
+    if (counter % 4 === 0) {
+        counter++
+        res.writeHead(404)
+        res.end()
+        return
+    }
     if (req.url === "/http-queue/get-a-job") {
         if (!lastReq) {
             lastReq = Date.now()
@@ -114,8 +120,9 @@ describe('Main cloud loop', () => {
             }
             stopIt()
             server.close()
-            if (smallestInterval < sleepTime) {
-                throw new Error('Smallest interval (' + smallestInterval + ') was smaller than the smallest pause (' + sleepTime + ')')
+            // Allow a small offset. Seems tests are failing with 99ms flakily.
+            if (smallestInterval < (sleepTime - 20)) {
+                throw new Error('Smallest interval (' + smallestInterval + ') was smaller than the smallest pause (' + sleepTime + ') well minus the offset')
             }
             resolve(null)
         })
