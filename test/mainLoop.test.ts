@@ -1,5 +1,6 @@
 import * as should from 'should'
 const http = require('http')
+const sleepTime = 100
 var counter = 1
 var port = 25212
 var lastReq
@@ -89,8 +90,8 @@ const wrappedStart = async(config, q, cloudQueue) => {
 
 const queue = require('queue')
 
-describe('That main function polling over there', () => {
-    it('Should be possible to start I guess', async () => {
+describe('Main cloud loop', () => {
+    it('Should not double start things in any way', async () => {
         const myQueue = queue()
         const myCloudQueue = queue()
         var myConfig = {
@@ -100,8 +101,8 @@ describe('That main function polling over there', () => {
             baseUrl: 'http://localhost:' + port,
             runCloud: true,
             hostname: 'myHostName',
-            sleepTime: 100,
-            cloudSleepTime: 100
+            sleepTime: sleepTime,
+            cloudSleepTime: sleepTime
         }
         myCloudQueue.on('end', function() {
             wrappedStart(myConfig, myQueue, myCloudQueue)
@@ -113,8 +114,8 @@ describe('That main function polling over there', () => {
             }
             stopIt()
             server.close()
-            if (smallestInterval < 100) {
-                throw new Error('Smallest interval (' + smallestInterval + ') was smaller than the smallest pause')
+            if (smallestInterval < sleepTime) {
+                throw new Error('Smallest interval (' + smallestInterval + ') was smaller than the smallest pause (' + sleepTime + ')')
             }
             resolve(null)
         })
