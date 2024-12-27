@@ -6,6 +6,12 @@ var port = 25212
 var lastReq
 var smallestInterval
 const server = http.createServer(function (req, res) {
+    if (counter % 4 === 0) {
+        counter++
+        res.writeHead(404)
+        res.end()
+        return
+    }
     if (req.url === "/http-queue/get-a-job") {
         if (!lastReq) {
             lastReq = Date.now()
