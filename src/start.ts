@@ -19,7 +19,7 @@ function stopIt () {
 
 const queue = require('queue')
 var startFuncQueue = queue()
-startFuncQueue.concurrency = 10
+startFuncQueue.concurrency = 1
 
 async function createStart (config, q, cloudQueue) {
   if (stopTheThing) {
