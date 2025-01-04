@@ -42,6 +42,10 @@ var sleep = require("await-sleep");
 var publisher_1 = require("./publisher");
 var RunLog_1 = require("./RunLog");
 var promisify_1 = require("./promisify");
+var clusterName = 'violinist-cluster';
+var sleepWhilePolling = 5000;
+// 3 hours (180 mins) hours with the interval above.
+var totalRetriesAllowed = (180 * (60 * 1000)) / sleepWhilePolling;
 var createLogGroup = function (taskDefinition) {
     return util.format('/ecs/%s', taskDefinition);
 };
@@ -69,7 +73,7 @@ exports.createEcsTaskDefinition = createEcsTaskDefinition;
 var createCloudJob = function (config, job, gitRev) {
     return function runJob(callback) {
         return __awaiter(this, void 0, void 0, function () {
-            var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1, message, updateData, publisher, statusData;
+            var logData, data, name, taskDefinition, runLog, awsconfig, env, ecsClient, watchClient, startTime, taskData, task, taskArn, retriesFind, foundTask, status_1, arnParts, retries, events, list, logErr_1, totalTime, stdout, message, updateData, publisher, statusData, err_1, message, updateData, publisher, statusData;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -84,7 +88,7 @@ var createCloudJob = function (config, job, gitRev) {
                         runLog.log.info('Trying to start cloud job for ' + logData.slug);
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 11, , 13]);
+                        _a.trys.push([1, 15, , 17]);
                         awsconfig = {
                             accessKeyId: config.accessKeyId,
                             secretAccessKey: config.secretAccessKey,
@@ -115,7 +119,7 @@ var createCloudJob = function (config, job, gitRev) {
                         watchClient = new AWS.CloudWatchLogs(awsconfig);
                         startTime = Date.now();
                         return [4 /*yield*/, ecsClient.runTask({
-                                cluster: 'violinist-cluster',
+                                cluster: clusterName,
                                 count: 1,
                                 launchType: 'FARGATE',
                                 networkConfiguration: {
@@ -143,40 +147,66 @@ var createCloudJob = function (config, job, gitRev) {
                         }
                         task = taskData.tasks[0];
                         taskArn = task.taskArn;
+                        retriesFind = 0;
+                        _a.label = 3;
+                    case 3:
+                        if (!true) return [3 /*break*/, 6];
+                        retriesFind++;
+                        return [4 /*yield*/, ecsClient.describeTasks({
+                                cluster: clusterName,
+                                tasks: [taskArn]
+                            }).promise()];
+                    case 4:
+                        foundTask = _a.sent();
+                        if (retriesFind > totalRetriesAllowed) {
+                            throw new Error('Timed out waiting for the job to stop the container. You can try to requeue the project or try again later');
+                        }
+                        if (foundTask.tasks && foundTask.tasks.length && foundTask.tasks[0].containers && foundTask.tasks[0].containers.length && foundTask.tasks[0].containers[0].lastStatus) {
+                            status_1 = foundTask.tasks[0].containers[0].lastStatus;
+                            if (status_1 === 'STOPPED') {
+                                return [3 /*break*/, 6];
+                            }
+                        }
+                        return [4 /*yield*/, sleep(sleepWhilePolling)];
+                    case 5:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 6:
                         arnParts = taskArn.split('/');
                         retries = 0;
                         events = [];
-                        _a.label = 3;
-                    case 3:
-                        if (!true) return [3 /*break*/, 9];
-                        _a.label = 4;
-                    case 4:
-                        _a.trys.push([4, 6, , 7]);
+                        _a.label = 7;
+                    case 7:
+                        if (!true) return [3 /*break*/, 13];
+                        _a.label = 8;
+                    case 8:
+                        _a.trys.push([8, 10, , 11]);
                         retries++;
                         return [4 /*yield*/, watchClient.getLogEvents({
                                 logGroupName: createLogGroup(taskDefinition),
                                 logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
                             }).promise()];
-                    case 5:
+                    case 9:
                         list = _a.sent();
                         events = list.events;
                         if (events.length) {
-                            return [3 /*break*/, 9];
+                            return [3 /*break*/, 13];
                         }
-                        return [3 /*break*/, 7];
-                    case 6:
+                        return [3 /*break*/, 11];
+                    case 10:
                         logErr_1 = _a.sent();
-                        return [3 /*break*/, 7];
-                    case 7:
+                        return [3 /*break*/, 11];
+                    case 11:
                         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
-                        if (retries > 2160) {
+                        if (retries > totalRetriesAllowed) {
                             throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later');
                         }
-                        return [4 /*yield*/, sleep(5000)];
-                    case 8:
+                        return [4 /*yield*/, sleep(sleepWhilePolling)];
+                    case 12:
                         _a.sent();
-                        return [3 /*break*/, 3];
-                    case 9:
+                        return [3 /*break*/, 7];
+                    case 13:
+                        runLog.log.info({ eventsLength: events.length }, 'Events length was: ' + events.length);
                         totalTime = Date.now() - startTime;
                         runLog.log.info({ containerTime: totalTime }, 'Total time was ' + totalTime);
                         stdout = events.map(function (event) {
@@ -194,12 +224,12 @@ var createCloudJob = function (config, job, gitRev) {
                         };
                         publisher = new publisher_1.default(config);
                         return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, updateData))];
-                    case 10:
+                    case 14:
                         statusData = _a.sent();
                         runLog.log.info('Job complete request code: ' + statusData.statusCode);
                         callback();
-                        return [3 /*break*/, 13];
-                    case 11:
+                        return [3 /*break*/, 17];
+                    case 15:
                         err_1 = _a.sent();
                         runLog.log.error(err_1, 'There was an error running a cloud task');
                         message = {
@@ -221,13 +251,13 @@ var createCloudJob = function (config, job, gitRev) {
                         };
                         publisher = new publisher_1.default(config);
                         return [4 /*yield*/, promisify_1.default(publisher.publish.bind(publisher, updateData))];
-                    case 12:
+                    case 16:
                         statusData = _a.sent();
                         runLog.log.info('Job complete request code: ' + statusData.statusCode);
                         // We do not care if things go ok, since things are queued so many times anyway.
                         callback();
-                        return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                        return [3 /*break*/, 17];
+                    case 17: return [2 /*return*/];
                 }
             });
         });

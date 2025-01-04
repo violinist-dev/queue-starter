@@ -7,6 +7,10 @@ import * as sleep from 'await-sleep'
 import Publisher from './publisher'
 import { Runlog } from './RunLog'
 import promisify from './promisify'
+const clusterName = 'violinist-cluster'
+const sleepWhilePolling = 5000
+// 3 hours (180 mins) hours with the interval above.
+const totalRetriesAllowed = (180 * (60 * 1000)) / sleepWhilePolling
 
 const createLogGroup = (taskDefinition) => {
   return util.format('/ecs/%s', taskDefinition)
@@ -75,7 +79,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
       const watchClient = new AWS.CloudWatchLogs(awsconfig)
       const startTime = Date.now()
       const taskData = await ecsClient.runTask({
-        cluster: 'violinist-cluster',
+        cluster: clusterName,
         count: 1,
         launchType: 'FARGATE',
         networkConfiguration: {
@@ -101,6 +105,26 @@ const createCloudJob = (config, job: Job, gitRev) => {
       }
       const task = taskData.tasks[0]
       const taskArn = task.taskArn
+      // Now try to find it again. Until it's stopped, in fact.
+      // @todo: Seems we should abstract this a bit, since we are using it twice now.
+      let retriesFind = 0
+      while (true) {
+        retriesFind++
+        const foundTask = await ecsClient.describeTasks({
+          cluster: clusterName,
+          tasks: [taskArn]
+        }).promise()
+        if (retriesFind > totalRetriesAllowed) {
+          throw new Error('Timed out waiting for the job to stop the container. You can try to requeue the project or try again later')
+        }
+        if (foundTask.tasks && foundTask.tasks.length && foundTask.tasks[0].containers && foundTask.tasks[0].containers.length && foundTask.tasks[0].containers[0].lastStatus) {
+          const status = foundTask.tasks[0].containers[0].lastStatus
+          if (status === 'STOPPED') {
+            break
+          }
+        }
+        await sleep(sleepWhilePolling)
+      }
       const arnParts = taskArn.split('/')
       let retries = 0
       let events = []
@@ -119,11 +143,12 @@ const createCloudJob = (config, job: Job, gitRev) => {
 
         }
         // We are allowed to wait for 3 hours. Thats a very long time, by the way...
-        if (retries > 2160) {
+        if (retries > totalRetriesAllowed) {
           throw new Error('Timed out waiting for the job to complete and have a log available. You can try to requeue the project or try again later')
         }
-        await sleep(5000)
+        await sleep(sleepWhilePolling)
       }
+      runLog.log.info({ eventsLength: events.length }, 'Events length was: ' + events.length)
       const totalTime = Date.now() - startTime
       runLog.log.info({ containerTime: totalTime }, 'Total time was ' + totalTime)
       const stdout = events.map(event => {
