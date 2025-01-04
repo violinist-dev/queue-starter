@@ -148,7 +148,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         }
         await sleep(sleepWhilePolling)
       }
-      runLog.log.info({eventsLength: events.length}, 'Events length was: ' + events.length)
+      runLog.log.info({ eventsLength: events.length }, 'Events length was: ' + events.length)
       const totalTime = Date.now() - startTime
       runLog.log.info({ containerTime: totalTime }, 'Total time was ' + totalTime)
       const stdout = events.map(event => {
