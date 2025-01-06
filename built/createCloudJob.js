@@ -183,6 +183,7 @@ var createCloudJob = function (config, job, gitRev) {
                         _a.trys.push([8, 10, , 11]);
                         retries++;
                         return [4 /*yield*/, watchClient.getLogEvents({
+                                limit: 100,
                                 logGroupName: createLogGroup(taskDefinition),
                                 logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
                             }).promise()];

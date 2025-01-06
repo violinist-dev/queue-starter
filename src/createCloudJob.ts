@@ -132,6 +132,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
         try {
           retries++
           const list = await watchClient.getLogEvents({
+            limit: 100,
             logGroupName: createLogGroup(taskDefinition),
             logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           }).promise()
