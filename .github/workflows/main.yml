@@ -17,7 +17,6 @@ jobs:
     strategy:
       matrix:
         node: 
-          - "20"
           - "22"
           - "24"
     steps:
@@ -34,19 +33,26 @@ jobs:
           CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
           CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
           CI_AWS_REGION: ${{ secrets.CI_AWS_REGION }}
-      - run: /bin/sh ./clean-repo.sh
-        if: matrix.node == 14
       - run: npm run coverage
-        if: matrix.node == 14
         env:
           CI_ACCESS_KEY_ID: ${{ secrets.CI_ACCESS_KEY_ID }}
           CI_SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
           CI_AWS_REGION: ${{ secrets.CI_AWS_REGION }}
+          COVERALLS_PARALLEL: true
       - name: Coveralls
-        if: matrix.node == 14
         uses: coverallsapp/github-action@master
+        env:
+          COVERALLS_PARALLEL: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+  finish:
+    needs: run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close parallel build
+        uses: coverallsapp/github-action@v1
+        with:
+          parallel-finished: true
 
   notify:
     runs-on: ubuntu-latest
