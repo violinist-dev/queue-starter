@@ -77,6 +77,7 @@ describe('createCloudJob', () => {
             '8.2': 'violinist-82-composer-',
             '8.3': 'violinist-83-composer-',
             '8.4': 'violinist-84-composer-',
+            '8.5': 'violinist-85-composer-',
         }
         for (const delta in supportedVersions) {
             for (const cDelta in composerVersions) {
