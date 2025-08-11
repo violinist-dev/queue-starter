@@ -19,11 +19,11 @@ const createLogGroup = (taskDefinition) => {
   return util.format('/ecs/%s', taskDefinition)
 }
 
-async function getAllLogEvents({ logs, logGroupName, logStreamName, startTime = 0, startFromHead = true, pageLimit = 1000 }) {
-  let nextToken = undefined;
-  const events = [];
-  const seen = new Set();
-  let guard = 0;
+async function getAllLogEvents ({ logs, logGroupName, logStreamName, startTime = 0, startFromHead = true, pageLimit = 1000 }) {
+  let nextToken
+  const events = []
+  const seen = new Set()
+  let guard = 0
 
   while (true) {
     const res = await logs.getLogEvents({
@@ -33,17 +33,17 @@ async function getAllLogEvents({ logs, logGroupName, logStreamName, startTime = 
       startFromHead,
       limit: pageLimit,
       nextToken
-    }).promise();
+    }).promise()
 
     for (const e of res.events) {
       // We only want unique events, so we use a Set to track seen event IDs.
       // This prevents duplicates in the final events array.
-      const hash = crypto.createHash('sha1');
-      hash.update(e.message + e.timestamp);
-      e.eventId = hash.digest('hex');
+      const hash = crypto.createHash('sha1')
+      hash.update(e.message + e.timestamp)
+      e.eventId = hash.digest('hex')
       if (!seen.has(e.eventId)) {
-        seen.add(e.eventId);
-        events.push(e);
+        seen.add(e.eventId)
+        events.push(e)
       }
     }
 
@@ -51,15 +51,15 @@ async function getAllLogEvents({ logs, logGroupName, logStreamName, startTime = 
     if (res.nextForwardToken === nextToken) {
       break
     };
-    nextToken = res.nextForwardToken;
+    nextToken = res.nextForwardToken
 
     // Safety to avoid accidental infinite loops
     if (++guard > 50) {
-      throw new Error('Pagination guard tripped');
+      throw new Error('Pagination guard tripped')
     }
   }
 
-  return events;
+  return events
 }
 
 const createEcsName = (data) => {
@@ -180,12 +180,12 @@ const createCloudJob = (config, job: Job, gitRev) => {
           events = await getAllLogEvents({
             logs: watchClient,
             logGroupName: createLogGroup(taskDefinition),
-            logStreamName: util.format('ecs/%s/%s', name, arnParts[2]),
+            logStreamName: util.format('ecs/%s/%s', name, arnParts[2])
           })
           // We require the first one to start with "[{" since thats the opening of the JSON stream.
           // But also, the last one should end with "}]"
           if (events.length && events[0].message.startsWith('[{') && events[events.length - 1].message.endsWith('}]')) {
-            break;
+            break
           }
         } catch (logErr) {
 
