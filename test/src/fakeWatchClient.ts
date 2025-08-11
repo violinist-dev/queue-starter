@@ -8,13 +8,14 @@ export default class fakeWatchClient extends fakeAwsBase {
 
     getPromiseOutput() {
         return {
+            nextForwardToken: 'nextToken',
             events: [
                 {
-                    message: 'One log message',
+                    message: '[{"message: "One log message"',
 
                 },
                 {
-                    message: 'Log message 2'
+                    message: '},"message":"Log message 2"}]',
                 }
             ]
         }
