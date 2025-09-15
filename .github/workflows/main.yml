@@ -40,7 +40,7 @@ jobs:
           CI_AWS_REGION: ${{ secrets.CI_AWS_REGION }}
           COVERALLS_PARALLEL: true
       - name: Coveralls
-        uses: coverallsapp/github-action@v1
+        uses: coverallsapp/github-action@v2
         continue-on-error: true
         env:
           COVERALLS_PARALLEL: true
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close parallel build
-        uses: coverallsapp/github-action@v1
+        uses: coverallsapp/github-action@v2
         continue-on-error: true
         with:
           parallel-finished: true
