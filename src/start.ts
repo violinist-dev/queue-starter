@@ -72,7 +72,6 @@ async function queuePull (config, q) {
   const imgs = supportedPhpVersions
   const jobs = imgs.map(async (version) => {
     var imgs = [
-        `${version}-multi-composer-1`,
         `${version}-multi-composer-2`
     ]
     imgs.forEach((img) => {
