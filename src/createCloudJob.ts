@@ -11,6 +11,11 @@ import promisify from './promisify'
 import * as crypto from 'crypto'
 
 const clusterName = 'violinist-cluster'
+// The ECS API rejects a runTask call where the serialized container overrides
+// are longer than this, with "Container Overrides length must be at most 8192".
+const overridesMaxLength = 8192
+// The env var we drop if that happens, to give the task a chance of starting.
+const skipWhenTooLong = 'private_key'
 const sleepWhilePolling = 5000
 // 3 hours (180 mins) hours with the interval above.
 const totalRetriesAllowed = (180 * (60 * 1000)) / sleepWhilePolling
@@ -62,6 +67,27 @@ async function getAllLogEvents ({ logs, logGroupName, logStreamName, startTime =
   return events
 }
 
+const createOverrides = (environment, name) => {
+  return {
+    containerOverrides: [
+      {
+        environment,
+        name
+      }
+    ]
+  }
+}
+
+// The env vars, largest first, so a log reader can tell what filled up the overrides.
+const createEnvLengths = (environment) => {
+  return environment.map(item => {
+    return {
+      name: item.name,
+      length: item.value.length
+    }
+  }).sort((a, b) => b.length - a.length)
+}
+
 const createEcsName = (data) => {
   // Should be named like this:
   // PHP version 7.1 => 71
@@ -110,7 +136,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
       if (data.composer_version) {
         data.composer_version = data.composer_version.toString()
       }
-      const env = Object.keys(data).map(key => {
+      let env = Object.keys(data).map(key => {
         return {
           name: key,
           value: job.data[key] + ''
@@ -121,6 +147,38 @@ const createCloudJob = (config, job: Job, gitRev) => {
         // We use this to identify the runners are from the cloud.
         value: 'violinist-e2'
       })
+      let overrides = createOverrides(env, name)
+      // ECS rejects the runTask call if the serialized overrides exceed this,
+      // so log the size (and the biggest keys) to make that debuggable.
+      let overridesLength = JSON.stringify(overrides).length
+      const envLengths = createEnvLengths(env)
+      runLog.log.info({
+        overridesLength,
+        overridesMaxLength,
+        envLengths
+      }, util.format('Container overrides length was %d of the allowed %d. Largest env var was %s with a length of %d', overridesLength, overridesMaxLength, envLengths[0].name, envLengths[0].length))
+      if (overridesLength > overridesMaxLength && env.some(item => item.name === skipWhenTooLong)) {
+        // The private key is usually the largest env var by far, so dropping it
+        // is the difference between a task that starts without a deploy key and
+        // a task the ECS API refuses to start at all.
+        env = env.filter(item => item.name !== skipWhenTooLong)
+        overrides = createOverrides(env, name)
+        const newOverridesLength = JSON.stringify(overrides).length
+        runLog.log.warn({
+          overridesLength,
+          newOverridesLength,
+          overridesMaxLength,
+          envLengths: createEnvLengths(env)
+        }, util.format('Container overrides length of %d exceeds the allowed %d, so skipping the %s env var. The length is now %d', overridesLength, overridesMaxLength, skipWhenTooLong, newOverridesLength))
+        overridesLength = newOverridesLength
+      }
+      if (overridesLength > overridesMaxLength) {
+        runLog.log.warn({
+          overridesLength,
+          overridesMaxLength,
+          envLengths: createEnvLengths(env)
+        }, util.format('Container overrides length of %d exceeds the allowed %d, so starting this task is expected to fail', overridesLength, overridesMaxLength))
+      }
       const ecsClient = new AWS.ECS(awsconfig)
       const watchClient = new AWS.CloudWatchLogs(awsconfig)
       const startTime = Date.now()
@@ -136,14 +194,7 @@ const createCloudJob = (config, job: Job, gitRev) => {
             ]
           }
         },
-        overrides: {
-          containerOverrides: [
-            {
-              environment: env,
-              name: name
-            }
-          ]
-        },
+        overrides,
         taskDefinition: taskDefinition
       }).promise()
       if (!taskData.tasks.length) {
