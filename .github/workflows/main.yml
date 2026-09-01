@@ -20,9 +20,9 @@ jobs:
           - "22"
           - "24"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
       - run: docker pull ghcr.io/violinist-dev/update-check-runner:8.0-multi-composer-2
@@ -40,7 +40,7 @@ jobs:
           CI_AWS_REGION: ${{ secrets.CI_AWS_REGION }}
           COVERALLS_PARALLEL: true
       - name: Coveralls
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
         continue-on-error: true
         env:
           COVERALLS_PARALLEL: true
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close parallel build
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2
         continue-on-error: true
         with:
           parallel-finished: true
@@ -61,7 +61,7 @@ jobs:
     needs: run
     steps:
       - name: Trigger Workflow
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         if: ${{ github.event_name == 'push' }}
         with:
           github-token: ${{ secrets.PAT }}
