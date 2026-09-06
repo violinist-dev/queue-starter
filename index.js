@@ -1,7 +1,6 @@
 const { start, queuePull } = require('./built/start')
 
 const queue = require('queue')
-const ks = require('kill-switch')
 const bunyan = require('bunyan')
 const config = require('./config')
 const log = bunyan.createLogger({ name: 'queue-starter', hostname: config.hostname })
@@ -29,5 +28,3 @@ q.on('end', (err) => {
   log.info('Local docker queue end')
   start(config, q, cloudQueue)
 })
-
-ks.autoStart()
