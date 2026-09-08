@@ -13,8 +13,10 @@ import * as crypto from 'crypto'
 const clusterName = 'violinist-cluster'
 // The ECS API rejects a runTask call where the serialized container overrides
 // are longer than this, with "Container Overrides length must be at most 8192".
-// We trigger our own trimming below this hard limit, to leave some headroom.
-const overridesMaxLength = 7500
+// AWS's own accounting can come out a bit stricter than what we compute here,
+// so we trim a bit before the hard limit. Adjust this if that gap changes.
+const overridesLengthSafetyMargin = 64
+const overridesMaxLength = 8192 - overridesLengthSafetyMargin
 // The env var we drop if that happens, to give the task a chance of starting.
 const skipWhenTooLong = 'private_key'
 const sleepWhilePolling = 5000
