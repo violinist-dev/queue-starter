@@ -3,11 +3,21 @@ import { Job } from '../src/job';
 const proxyquire = require('proxyquire').noCallThru();
 import * as fakeRunlog from "./src/fakeRunLog";
 import fakeEcs from "./src/fakeEcs"
+import fakeEcsNeverStops from "./src/fakeEcsNeverStops"
 import fakeWatchClient from "./src/fakeWatchClient"
 import promisify from "../src/promisify"
 import * as fakePublisher from "./src/fakePublisher"
 const supportedVersions = require("../src/supportedPhpVersions")
 const composerVersions = [2]
+
+class fakeCapturingPublisher {
+    static lastData
+    constructor (config: {baseUrl}) {}
+    publish (data: {jobId: number}, callback: Function) {
+        fakeCapturingPublisher.lastData = data
+        callback(null, { statusCode: 200 })
+    }
+}
 
 describe('createCloudJob', () => {
 
@@ -95,5 +105,31 @@ describe('createCloudJob', () => {
                 await promisify(fakePublisher.default.closeServer)
             }
         }
+    })
+
+    it('Should report the job as a failure to the backend when waiting for the container to stop times out', async function () {
+        this.timeout(30000)
+        fakeCapturingPublisher.lastData = undefined
+        let { createCloudJob } = proxyquire('../src/createCloudJob', {
+            'aws-sdk': {
+                ECS: fakeEcsNeverStops,
+                CloudWatchLogs: fakeWatchClient
+            },
+            './publisher': { default: fakeCapturingPublisher },
+            './RunLog': fakeRunlog,
+            'await-sleep': () => Promise.resolve()
+        })
+        let run = createCloudJob({}, new Job({
+            slug: 'violinst/example-slug',
+            job_id: 42
+        }), 'efef')
+        await promisify(run.bind(null))
+        let calls = fakeRunlog.Runlog.getCalls()
+        should(calls.error.length).equal(1)
+        should(calls.error[0][0].message).equal('Timed out waiting for the job to stop the container. You can try to requeue the project or try again later')
+        should(fakeCapturingPublisher.lastData).not.be.undefined()
+        should(fakeCapturingPublisher.lastData.jobId).equal(42)
+        should(fakeCapturingPublisher.lastData.set_state).equal('failure')
+        should(fakeCapturingPublisher.lastData.message.stdout[0]).containEql('Timed out waiting for the job to stop the container')
     })
 })
