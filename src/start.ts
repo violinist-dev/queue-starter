@@ -75,8 +75,8 @@ async function queuePull (config, q) {
         `${version}-multi-composer-2`
     ]
     imgs.forEach((img) => {
-      q.push(createPullJob(img))
       q.push(createPruneJob(img))
+      q.push(createPullJob(img))
     })
     q.start()
   })
