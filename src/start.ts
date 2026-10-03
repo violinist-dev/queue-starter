@@ -76,7 +76,6 @@ async function queuePull (config, q) {
     ]
     imgs.forEach((img) => {
       q.push(createPullJob(img))
-      q.push(createPruneJob(img))
     })
     q.start()
   })
