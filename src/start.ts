@@ -1,7 +1,6 @@
 const createJob = require('./createJob')
 const bunyan = require('bunyan')
 const createCloudJob = require('./createCloudJob').createCloudJob
-const createPruneJob = require('./createPruneJob')
 const createPullJob = require('./createPullJob')
 const supportedPhpVersions = require('./supportedPhpVersions')
 const sleep = require('await-sleep')
@@ -76,7 +75,6 @@ async function queuePull (config, q) {
     ]
     imgs.forEach((img) => {
       q.push(createPullJob(img))
-      q.push(createPruneJob(img))
     })
     q.start()
   })
